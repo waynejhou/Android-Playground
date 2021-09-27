@@ -2,8 +2,9 @@ package org.waynezhou.libUtil;
 
 import java.util.function.Predicate;
 
-public class Delegate {
-    public static final Runnable DoNothing = ()->{};
+public class DelegateUtils {
+    public static final Runnable NothingRunnable = ()->{};
+    public static final java.util.function.Consumer<?> NothingConsumer = $->{};
     public static final Predicate<?> AlwaysTrue = $->true;
     public static final Predicate<?> AlwaysFalse = $->false;
 }
