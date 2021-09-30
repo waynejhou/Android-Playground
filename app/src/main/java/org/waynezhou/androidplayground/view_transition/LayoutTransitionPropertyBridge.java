@@ -1,2 +1,4 @@
-package org.waynezhou.androidplayground.view_transition;public class LayoutTransitionPropertyBridge {
+package org.waynezhou.androidplayground.view_transition;
+
+public abstract class LayoutTransitionPropertyBridge {
 }

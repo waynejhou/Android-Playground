@@ -9,9 +9,11 @@ public class LayoutExecutionArgs {
     public static Builder builder() {
         return new Builder();
     }
+
     public static Builder builder(LayoutExecutionArgs args) {
         return new Builder(args);
     }
+
     public static class Builder {
         private boolean withAnimation = false;
         private int duration = 0;
@@ -24,18 +26,16 @@ public class LayoutExecutionArgs {
             duration = args.duration;
         }
 
-        public Builder withAnimation() {
-            withAnimation = true;
-            return this;
-        }
-
-        public Builder setWithAnimation(boolean withAnimation) {
-            this.withAnimation = withAnimation;
-            return this;
-        }
 
         public Builder setAnimationDuration(int duration) {
-            this.duration = duration;
+            if (duration <= 0){
+                this.withAnimation = false;
+                this.duration = 0;
+            }
+            else {
+                this.withAnimation = true;
+                this.duration = duration;
+            }
             return this;
         }
 

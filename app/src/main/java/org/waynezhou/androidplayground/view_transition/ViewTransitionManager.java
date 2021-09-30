@@ -1,4 +1,4 @@
-package org.waynezhou.androidplayground.ui_transition;
+package org.waynezhou.androidplayground.view_transition;
 
 public class ViewTransitionManager {
 }

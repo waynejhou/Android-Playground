@@ -11,88 +11,87 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class LayoutDestination<TValuesHolder> {
-    protected final List<ViewDestination<TValuesHolder>> viewDestinations;
+public class LayoutDestination<TViewHolder> {
+    protected final List<ViewDestination<TViewHolder>> viewDestinations;
 
-    private LayoutDestination(List<ViewDestination<TValuesHolder>> viewDestinations) {
+    private LayoutDestination(List<ViewDestination<TViewHolder>> viewDestinations) {
         this.viewDestinations = viewDestinations;
     }
 
-    public static <TValuesHolder> Builder<TValuesHolder> builder(Class<TValuesHolder> clz) {
+    public static <TViewHolder> Builder<TViewHolder> builder(Class<TViewHolder> clz) {
         return new Builder<>();
     }
 
-    public static <TValuesHolder> Builder<TValuesHolder> builder(LayoutDestination<TValuesHolder> dest) {
+    public static <TViewHolder> Builder<TViewHolder> builder(LayoutDestination<TViewHolder> dest) {
         return new Builder<>(dest);
     }
 
-    public static class Builder<TValuesHolder> {
-        private List<ViewDestination<TValuesHolder>> viewDestinations = new ArrayList<>();
+    public static class Builder<TViewHolder> {
+        private List<ViewDestination<TViewHolder>> viewDestinations = new ArrayList<>();
 
         public Builder() {
 
         }
 
-        public Builder(LayoutDestination<TValuesHolder> dest) {
+        public Builder(LayoutDestination<TViewHolder> dest) {
             this.viewDestinations = new ArrayList<>(dest.viewDestinations);
         }
 
-        public ViewDestinationBuilder<TValuesHolder> beginConfig(View view) {
-            return new ViewDestinationBuilder<>(this, view);
+        public ViewDestinationBuilder<TViewHolder> beginConfig(ViewGetter<TViewHolder> viewGetter) {
+            return new ViewDestinationBuilder<>(this, viewGetter);
         }
 
-        public LayoutDestination<TValuesHolder> build() {
+        public LayoutDestination<TViewHolder> build() {
             return new LayoutDestination<>(viewDestinations);
         }
     }
 
 
-    public static class ViewDestinationBuilder<TValuesHolder> {
-        private final View view;
-        private final LayoutDestination.Builder<TValuesHolder> host;
+    public static class ViewDestinationBuilder<TViewHolder> {
+        private final ViewGetter<TViewHolder> viewGetter;
+        private final LayoutDestination.Builder<TViewHolder> host;
 
-        private ViewDestinationBuilder(LayoutDestination.Builder<TValuesHolder> host, View view) {
-            this.view = view;
+        private ViewDestinationBuilder(LayoutDestination.Builder<TViewHolder> host, ViewGetter<TViewHolder> viewGetter) {
+            this.viewGetter = viewGetter;
             this.host = host;
         }
 
 
-        private final List<ViewPropertyValues<TValuesHolder>> properties = new ArrayList<>();
+        private final List<ViewPropertyValues<TViewHolder>> properties = new ArrayList<>();
 
         @SafeVarargs
-        public ViewDestinationBuilder<TValuesHolder> set(String propertyName, FloatGetter<TValuesHolder>... values) {
-            properties.clear();
+        public final ViewDestinationBuilder<TViewHolder> set(String propertyName, FloatGetter<TViewHolder>... values) {
             properties.add(new ViewPropertyValues<>(propertyName, values));
             return this;
         }
 
-        public ViewDestinationBuilder<TValuesHolder> apply(StandardKt.RunBlock<ViewDestinationBuilder<TValuesHolder>> runBlock) {
+        public ViewDestinationBuilder<TViewHolder> apply(StandardKt.RunBlock<ViewDestinationBuilder<TViewHolder>> runBlock) {
             runBlock.run(this);
             return this;
         }
 
-        public LayoutDestination.Builder<TValuesHolder> endConfig() {
-            host.viewDestinations.add(new ViewDestination<>(view, properties));
+        public LayoutDestination.Builder<TViewHolder> endConfig() {
+            host.viewDestinations.add(new ViewDestination<>(viewGetter, properties));
             return host;
         }
     }
 
 
-    protected static class ViewDestination<TValuesHolder> {
-        protected final View view;
-        protected final List<ViewPropertyValues<TValuesHolder>> properties;
+    protected static class ViewDestination<TViewHolder> {
+        protected final ViewGetter<TViewHolder> viewGetter;
+        protected final List<ViewPropertyValues<TViewHolder>> properties;
 
-        private ViewDestination(View view, List<ViewPropertyValues<TValuesHolder>> properties) {
-            this.view = view;
+        private ViewDestination(ViewGetter<TViewHolder> viewGetter, List<ViewPropertyValues<TViewHolder>> properties) {
+            this.viewGetter = viewGetter;
             this.properties = properties;
         }
     }
 
-    protected static class ViewPropertyValues<TValuesHolder> {
+    protected static class ViewPropertyValues<TViewHolder> {
         protected final String name;
-        protected final FloatGetter<TValuesHolder>[] valueGetters;
+        protected final FloatGetter<TViewHolder>[] valueGetters;
 
-        private ViewPropertyValues(String name, FloatGetter<TValuesHolder>[] valueGetters) {
+        private ViewPropertyValues(String name, FloatGetter<TViewHolder>[] valueGetters) {
             this.name = name;
             this.valueGetters = valueGetters;
         }
@@ -113,7 +112,6 @@ public class LayoutDestination<TValuesHolder> {
         @Override
         void set(View view, float value) {
             view.getLayoutParams().width = (int) value;
-            view.requestLayout();
         }
     }
 
@@ -126,7 +124,6 @@ public class LayoutDestination<TValuesHolder> {
         @Override
         void set(View view, float value) {
             view.getLayoutParams().height = (int) value;
-            view.requestLayout();
         }
     }
 
@@ -139,7 +136,6 @@ public class LayoutDestination<TValuesHolder> {
         @Override
         void set(View view, float value) {
             ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).leftMargin = (int) value;
-            view.requestLayout();
         }
     }
 
@@ -152,7 +148,6 @@ public class LayoutDestination<TValuesHolder> {
         @Override
         void set(View view, float value) {
             ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).topMargin = (int) value;
-            view.requestLayout();
         }
     }
 
@@ -167,8 +162,6 @@ public class LayoutDestination<TValuesHolder> {
             view.setRotation(value);
         }
     }
-
-
 
     protected static HashMap<String, ViewPropertyBridge> VIEW_PROP_BRIDGE = new HashMap<String, ViewPropertyBridge>(){{
         put(LayoutProperties.PROP_WIDTH, new ViewWidthBridge());

@@ -1,6 +1,7 @@
 package org.waynezhou.androidplayground.view_transition;
 
-public abstract class LayoutTransitionValueGetter {
+public final class LayoutTransitionPropertyBridges {
+    private LayoutTransitionPropertyBridges(){}
     public static final String PROP_WIDTH = "width";
     public static final String PROP_HEIGHT = "height";
     public static final String PROP_LEFT = "left";

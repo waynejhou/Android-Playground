@@ -1,2 +1,4 @@
-package org.waynezhou.androidplayground.view_transition;public class ViewTransitionPlayer {
+package org.waynezhou.androidplayground.view_transition;
+
+public class ViewTransitionPlayer {
 }
