@@ -3,14 +3,14 @@ package org.waynezhou.androidplayground.view_transition;
 import android.animation.TimeInterpolator;
 import android.view.animation.AccelerateInterpolator;
 
-public class LayoutAnimatorArgs {
+public class ViewAnimatorArgs {
     public final long duration;
     public final TimeInterpolator interpolator;
-    private LayoutAnimatorArgs(long duration, TimeInterpolator interpolator){
+    private ViewAnimatorArgs(long duration, TimeInterpolator interpolator){
         this.duration = duration;
         this.interpolator = interpolator;
     }
-    static class Builder{
+    public static class Builder{
         private long duration = 0;
         private TimeInterpolator interpolator = new AccelerateInterpolator();
 
@@ -21,8 +21,8 @@ public class LayoutAnimatorArgs {
         public void setInterpolator(TimeInterpolator interpolator) {
             this.interpolator = interpolator;
         }
-        public LayoutAnimatorArgs build(){
-            return new LayoutAnimatorArgs(duration, interpolator);
+        public ViewAnimatorArgs build(){
+            return new ViewAnimatorArgs(duration, interpolator);
         }
     }
 }

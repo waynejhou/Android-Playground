@@ -49,7 +49,7 @@ public final class LogHelper {
         objMsg = callerInfo.getClassName().replaceFirst(packageName, "")
                 + "::"
                 + callerInfo.getMethodName() + "(" + callerInfo.getFileName() + ":" + callerInfo.getLineNumber() + ")"
-                + "\n"
+                + (objMsg.isEmpty()? "" : " - ")
                 + objMsg;
         method.log(tag, objMsg);
     }

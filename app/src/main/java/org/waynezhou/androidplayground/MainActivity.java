@@ -1,5 +1,7 @@
 package org.waynezhou.androidplayground;
 
+import android.animation.AnimatorSet;
+import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.hardware.Sensor;
@@ -14,68 +16,87 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.waynezhou.androidplayground.databinding.ActivityMainBinding;
-import org.waynezhou.androidplayground.layout.LayoutDestination;
-import org.waynezhou.androidplayground.layout.LayoutExecutionArgs;
 import org.waynezhou.androidplayground.layout.LayoutManager;
-import org.waynezhou.androidplayground.layout.LayoutTemplate;
-import org.waynezhou.androidplayground.layout.ViewLayoutVariables;
+import org.waynezhou.androidplayground.view_transition.LayoutTransitionPropertyBridges;
+import org.waynezhou.androidplayground.view_transition.LayoutTransitionSteps;
+import org.waynezhou.androidplayground.view_transition.ValueGetter;
+import org.waynezhou.androidplayground.view_transition.ViewAnimatorArgs;
 import org.waynezhou.libUtil.DelegateUtils;
+import org.waynezhou.libUtil.EnumClass;
 import org.waynezhou.libUtil.LogHelper;
 import org.waynezhou.libUtil.SensorToggle;
 import org.waynezhou.libUtil.StandardKt;
+import org.waynezhou.libUtil.eventArgs.SensorChangedEventArgs;
 
-import static org.waynezhou.androidplayground.layout.LayoutProperties.*;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
-    // region activity callback
+    // region Input from anything
     private ActivityMainBinding binding;
     private LayoutManager<MainActivity> layoutManager;
     private SensorToggle gSensor;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        LogHelper.i();
         super.onCreate(savedInstanceState);
 
+        LogHelper.i("Set Window Rotation Animation");
         final WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT;
 
+        orientation = getResources().getConfiguration().orientation;
+
+        LogHelper.i("Set Main Activity Binding");
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        LogHelper.i("Set Binding Root GlobalLayoutListener");
         binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(this::globalLayoutChanged);
+        LogHelper.i("Set Content View");
+        globalLayoutChangedReason = LayoutChangedReason.CONTENT_VIEW_SET;
         setContentView(binding.getRoot());
-        initLayoutVariables();
+
         layoutManager = new LayoutManager<>(this);
 
         gSensor = new SensorToggle(this, Sensor.TYPE_ACCELEROMETER, SensorManager.SENSOR_DELAY_UI);
-        gSensor.getEventGroup().on(e -> e.changed, e -> {
-            float[] axis = e.event.values;
-            final float x = axis[0];
-            final float y = axis[1];
-            //final float z = axis[2];
-            final float g = SensorManager.STANDARD_GRAVITY;
-            //LogHelper.d("x: "+x+" y: "+y);
-            if ((Math.abs(x - 0) < 1f && Math.abs(y - g) < 1f) && this.orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                this.orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        gSensor.getEventGroup().on(e -> e.changed, this::onGSensorValueChanged);
+    }
+
+    private void onGSensorValueChanged(SensorChangedEventArgs e) {
+        float[] axis = e.event.values;
+        final float x = axis[0];
+        final float y = axis[1];
+        //final float z = axis[2];
+        final float g = SensorManager.STANDARD_GRAVITY;
+        //LogHelper.d("x: "+x+" y: "+y);
+        if ((Math.abs(x - 0) < 1f && Math.abs(y - g) < 1f) && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                /*this.orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
                 nextLayoutChanged = () -> {
                     this.nextLayoutChanged = DelegateUtils.NothingRunnable;
                     layoutManager.openTemplate(portrait).setArgs(LayoutExecutionArgs.builder().setAnimationDuration(1000).build()).execute();
                 };
-                layoutManager.openTemplate(pre_portrait).executeWithoutRequest();
-                rotate(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            } else if ((Math.abs(x - g) < 1f && Math.abs(y - 0) < 1f) && this.orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                this.orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                layoutManager.openTemplate(pre_portrait).executeWithoutRequest();*/
+            control.sendSignal(ControlSignal.ROTATE_PORT);
+        } else if ((Math.abs(x - g) < 1f && Math.abs(y - 0) < 1f) && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                /*this.orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
                 nextLayoutChanged = () -> {
                     this.nextLayoutChanged = DelegateUtils.NothingRunnable;
                     layoutManager.openTemplate(landscape).setArgs(LayoutExecutionArgs.builder().setAnimationDuration(1000).build()).execute();
                 };
-                layoutManager.openTemplate(pre_landscape).executeWithoutRequest();
-                rotate(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-            }
-        });
+                layoutManager.openTemplate(pre_landscape).executeWithoutRequest();*/
+            control.sendSignal(ControlSignal.ROTATE_LAND);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        LogHelper.i();
+        super.onDestroy();
     }
 
     @Override
     protected void onResume() {
+        LogHelper.i();
         super.onResume();
         gSensor.On();
         hideSystemUI();
@@ -83,250 +104,207 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        LogHelper.i();
         super.onPause();
         gSensor.Off();
     }
 
+    @Override
+    protected void onStart() {
+        LogHelper.i();
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        LogHelper.i();
+        super.onStop();
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        LogHelper.i();
+        super.onPostCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onPostResume() {
+        LogHelper.i();
+        super.onPostResume();
+    }
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
     }
-    // endregion
 
-    // region rotate
-    private void rotate(int screenOrientation) {
-        if (orientation == screenOrientation) return;
-        orientation = screenOrientation;
-        setRequestedOrientation(screenOrientation);
-    }
+
     // endregion
 
     // region layout variables
-    private volatile Integer orientation = null;
+    private static class LayoutChangedReason extends EnumClass.Int {
+        public static final LayoutChangedReason ROTATION_REQUESTED = new LayoutChangedReason("Rotation Requested");
+        public static final LayoutChangedReason CONTENT_VIEW_SET = new LayoutChangedReason("Content View Set");
 
-    private final ViewLayoutVariables rootVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables port_topVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables port_sep1Vars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables port_middleVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables port_sep2Vars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables port_bottomVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables prePort_topVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables prePort_sep1Vars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables prePort_middleVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables prePort_sep2Vars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables prePort_bottomVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables land_topVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables land_sep1Vars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables land_middleVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables land_sep2Vars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables land_bottomVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables preLand_topVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables preLand_sep1Vars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables preLand_middleVars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables preLand_sep2Vars = new ViewLayoutVariables();
-
-    private final ViewLayoutVariables preLand_bottomVars = new ViewLayoutVariables();
-
-    private void refreshLayoutVariables(int width, int height){
-        rootVars.width = width;
-        rootVars.height = height;
-    }
-    // endregion
-
-
-    // region layout
-
-
-    private void initLayoutVariables() {
-        orientation = this.getResources().getConfiguration().orientation;
-        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        private LayoutChangedReason(String identifier) {
+            super(identifier);
         }
     }
 
     @NonNull
-    private volatile Runnable nextLayoutChanged = DelegateUtils.NothingRunnable;
+    private Runnable onceRotationRequested = DelegateUtils.NothingRunnable;
+    private volatile LayoutChangedReason globalLayoutChangedReason = null;
 
     private void globalLayoutChanged() {
-        int height = binding.getRoot().getMeasuredHeight();
-        int width = binding.getRoot().getMeasuredWidth();
-        if (rootWidth != width || rootHeight != height) {
+        if (globalLayoutChangedReason == null) return;
+        LogHelper.i(globalLayoutChangedReason);
+        if (globalLayoutChangedReason.equals(LayoutChangedReason.CONTENT_VIEW_SET)) {
+            onContentViewSet();
+        } else if (globalLayoutChangedReason.equals(LayoutChangedReason.ROTATION_REQUESTED)) {
+            onceRotationRequested.run();
+            onceRotationRequested = DelegateUtils.NothingRunnable;
+            onRotationRequested();
+        }
+        globalLayoutChangedReason = null;
+    }
 
-            rootWidth = width;
-            rootHeight = height;
+    private void onContentViewSet() {
+        refreshLayoutProperties();
+        layoutAuto();
+    }
 
-            port_topHeight = (int) (rootWidth * 9f / 16f);
-            port_sep1AboveHeight = port_topHeight;
-            port_sep1Height = 50;
-            port_sep1BelowHeight = port_sep1AboveHeight + port_sep1Height;
-            port_middleHeight = (int) (rootWidth * 9f / 16f);
-            port_sep2AboveHeight = port_sep1BelowHeight + port_middleHeight;
-            port_sep2Height = 50;
-            port_sep2BelowHeight = port_sep2AboveHeight + port_sep2Height;
-            port_bottomHeight = rootHeight - port_sep2BelowHeight;
+    private void onRotationRequested() {
+        refreshLayoutProperties();
+        layoutAuto();
+    }
 
-            land_topWidth = (int) (rootHeight * 9f / 16f);
-            land_sep1AboveWidth = land_topWidth;
-            land_sep1Width = 50;
-            land_sep1BelowWidth = land_sep1AboveWidth + land_sep1Width;
-            land_middleWidth = (int) (rootHeight * 9f / 16f);
-            land_sep2AboveWidth = land_sep1BelowWidth + land_middleWidth;
-            land_sep2Width = 50;
-            land_sep2BelowWidth = land_sep2AboveWidth + land_sep2Width;
-            land_bottomWidth = rootWidth - land_sep2BelowWidth;
-            LogHelper.d("[width: %d, height: %d, orientation, %d]", rootWidth, rootHeight, orientation);
-            this.nextLayoutChanged.run();
+    private Integer rootWidth = null;
+    private Integer rootHeight = null;
+    private Integer rootLeft = null;
+    private Integer rootTop = null;
+    private Integer longSideLength = null;
+    private Integer shortSideLength = null;
+
+    private Integer port_topContainer_height = null;
+    private Integer port_topContainer_top = null;
+    private Integer port_middleContainer_top = null;
+    private Integer port_middleContainer_height = null;
+    private Integer port_bottomContainer_top = null;
+    private Integer port_bottomContainer_height = null;
+
+    private void refreshLayoutProperties() {
+        final int width = binding.getRoot().getWidth();
+        final int height = binding.getRoot().getHeight();
+        LogHelper.d("globalLayoutChanged root: [Width: %d, Height: %d]", width, height);
+        rootWidth = width;
+        rootHeight = height;
+        longSideLength = Math.max(rootWidth, rootHeight);
+        shortSideLength = Math.min(rootWidth, rootHeight);
+        rootLeft = 0;
+        rootTop = 0;
+        port_topContainer_top = rootTop;
+        port_topContainer_height = (int) (shortSideLength * 9f / 16f);
+        port_middleContainer_top = rootTop + port_topContainer_height + 50;
+        port_middleContainer_height = (int) (shortSideLength * 9f / 16f);
+        port_bottomContainer_top = port_middleContainer_top + port_middleContainer_height + 50;
+        port_bottomContainer_height = longSideLength - port_bottomContainer_top;
+    }
+
+    // endregion
+
+    private void layoutAuto(){
+        if(orientation==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
+            //layoutToLand();
+        }else if(orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT){
+            layoutToPort();
+        }
+    }
+    private void layoutToPort() {
+        LogHelper.i();
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(
+                new LayoutTransitionSteps.ViewStep(
+                        new HashMap<String, ValueGetter[]>(){{
+                            put(LayoutTransitionPropertyBridges.PROP_WIDTH, ValueGetter.prop(LayoutTransitionPropertyBridges.PROP_WIDTH)
+                                    .FromCurrentLayoutTo(new ValueGetter.FromValueHolder<MainActivity>(h->h.shortSideLength)));
+                        }}
+                )
+                        .generateAnimator(
+                                binding.mainTopContainer, this
+                                , StandardKt.apply(new ViewAnimatorArgs.Builder(),it->{
+                                    it.setDuration(500);
+                                }).build()
+                        )
+        );
+        set.start();
+    }
+
+    private final Control control = new Control();
+
+    private static class ControlSignal extends EnumClass.Int {
+        public static final ControlSignal ROTATE = new ControlSignal("Rotate");
+        public static final ControlSignal ROTATE_PORT = new ControlSignal("Rotate Port");
+        public static final ControlSignal ROTATE_LAND = new ControlSignal("Rotate Land");
+
+        protected ControlSignal(String statement) {
+            super(statement);
         }
     }
 
-    StandardKt.RunBlock<LayoutDestination.ViewDestinationBuilder<MainActivity>> viewLayout_port_top = it -> {
-        it.set(PROP_WIDTH, CURRENT(), h -> h.rootWidth);
-        it.set(PROP_HEIGHT, CURRENT(), h -> h.port_topHeight);
-        it.set(PROP_LEFT, CURRENT(), GET_ZERO());
-        it.set(PROP_TOP, CURRENT(), GET_ZERO());
-    };
-    StandardKt.RunBlock<LayoutDestination.ViewDestinationBuilder<MainActivity>> viewLayout_port_middle = it -> {
-        it.set(PROP_WIDTH, CURRENT(), h -> h.rootWidth);
-        it.set(PROP_HEIGHT, CURRENT(), h -> h.port_middleHeight);
-        it.set(PROP_LEFT, CURRENT(), GET_ZERO());
-        it.set(PROP_TOP, CURRENT(), h -> h.port_sep1BelowHeight);
-    };
-    StandardKt.RunBlock<LayoutDestination.ViewDestinationBuilder<MainActivity>> viewLayout_port_bottom = it -> {
-        it.set(PROP_WIDTH, CURRENT(), h -> h.rootWidth);
-        it.set(PROP_HEIGHT, CURRENT(), h -> h.port_bottomHeight);
-        it.set(PROP_LEFT, CURRENT(), GET_ZERO());
-        it.set(PROP_TOP, CURRENT(), h -> h.port_sep2BelowHeight);
-    };
+    private class Control {
+        public void sendSignal(ControlSignal signal) {
+            LogHelper.i(signal);
+            if (ControlSignal.ROTATE.equals(signal)) {
+                rotate.auto();
+            } else if (ControlSignal.ROTATE_LAND.equals(signal)) {
+                rotate.toLand();
+            } else if (ControlSignal.ROTATE_PORT.equals(signal)) {
+                rotate.toPort();
+            }
+        }
+    }
 
-    StandardKt.RunBlock<LayoutDestination.ViewDestinationBuilder<MainActivity>> viewLayout_land_top = it -> {
-        it.set(PROP_WIDTH, h -> h.land_topWidth);
-        it.set(PROP_HEIGHT, h -> h.rootHeight);
-        it.set(PROP_LEFT, GET_ZERO());
-        it.set(PROP_TOP, GET_ZERO());
-    };
-    StandardKt.RunBlock<LayoutDestination.ViewDestinationBuilder<MainActivity>> viewLayout_land_middle = it -> {
-        it.set(PROP_WIDTH, h -> h.land_middleWidth);
-        it.set(PROP_HEIGHT, h -> h.rootHeight);
-        it.set(PROP_LEFT, h -> h.land_sep1BelowWidth);
-        it.set(PROP_TOP, GET_ZERO());
-    };
-    StandardKt.RunBlock<LayoutDestination.ViewDestinationBuilder<MainActivity>> viewLayout_land_bottom = it -> {
-        it.set(PROP_WIDTH, h -> h.land_bottomWidth);
-        it.set(PROP_HEIGHT, h -> h.rootHeight);
-        it.set(PROP_LEFT, h -> h.land_sep2BelowWidth);
-        it.set(PROP_TOP, GET_ZERO());
-    };
+    private volatile Integer orientation = null;
+    private final Rotate rotate = new Rotate();
 
-    final LayoutTemplate<MainActivity> pre_landscape = new LayoutTemplate<MainActivity>()
-            .setDest(LayoutDestination.builder(MainActivity.class)
-                    //
-                    .beginConfig(h -> h.binding.mainTopContainer)
-                    .set(PROP_WIDTH, h -> h.port_topHeight)
-                    .set(PROP_HEIGHT, h -> h.rootWidth)
-                    .set(PROP_LEFT, GET_ZERO())
-                    .set(PROP_TOP, GET_ZERO())
-                    .endConfig()
-                    //
-                    .beginConfig(h -> h.binding.mainMiddleContainer)
-                    .set(PROP_WIDTH, h -> h.port_middleHeight)
-                    .set(PROP_HEIGHT, h -> h.rootWidth)
-                    .set(PROP_LEFT, h -> h.port_sep1BelowHeight)
-                    .set(PROP_TOP, GET_ZERO())
-                    .endConfig()
-                    //
-                    .beginConfig(h -> h.binding.mainBottomContainer)
-                    .set(PROP_WIDTH, h -> h.port_bottomHeight)
-                    .set(PROP_HEIGHT, h -> h.rootWidth)
-                    .set(PROP_LEFT, h -> h.port_sep2BelowHeight)
-                    .set(PROP_TOP, GET_ZERO())
-                    .endConfig()
-                    //
-                    .build());
+    private class Rotate {
+        public void auto() {
+            if (orientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                _toPort();
+            } else if (orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                _toLand();
+            }
+        }
 
-    final LayoutTemplate<MainActivity> landscape = new LayoutTemplate<MainActivity>()
-            .setPreAction(() -> {
-                binding.mainTopContainer.setZ(1f);
-                binding.mainMiddleContainer.setZ(0f);
-                binding.mainBottomContainer.setZ(0f);
-            })
-            .setDest(LayoutDestination.builder(MainActivity.class)
-                    //
-                    .beginConfig(h -> h.binding.mainTopContainer)
-                    .apply(VIEW_FULLSCREEN(h -> h.rootWidth, h -> h.rootHeight))
-                    .endConfig()
-                    //
-                    .beginConfig(h -> h.binding.mainMiddleContainer)
-                    .apply(VIEW_HIDE_RIGHT(h -> h.rootWidth))
-                    .endConfig()
-                    //
-                    .beginConfig(h -> h.binding.mainBottomContainer)
-                    .apply(VIEW_HIDE_RIGHT(h -> h.rootWidth))
-                    .endConfig()
-                    //
-                    .build());
-    final LayoutTemplate<MainActivity> pre_portrait = new LayoutTemplate<MainActivity>()
-            .setDest(LayoutDestination.builder(MainActivity.class)
-                    //
-                    .beginConfig(h -> h.binding.mainTopContainer)
-                    .apply(VIEW_FULLSCREEN(h -> h.rootHeight, h -> h.rootWidth))
-                    .endConfig()
-                    //
-                    .beginConfig(h -> h.binding.mainMiddleContainer)
-                    .set(PROP_WIDTH, h -> h.rootWidth)
-                    .set(PROP_HEIGHT, GET_ZERO())
-                    .set(PROP_LEFT, GET_ZERO())
-                    .set(PROP_TOP, h -> h.rootWidth)
-                    .endConfig()
-                    //
-                    .beginConfig(h -> h.binding.mainBottomContainer)
-                    .set(PROP_WIDTH, h -> h.rootWidth)
-                    .set(PROP_HEIGHT, GET_ZERO())
-                    .set(PROP_LEFT, GET_ZERO())
-                    .set(PROP_TOP, h -> h.rootWidth)
-                    .endConfig()
-                    //
-                    .build());
-    final LayoutTemplate<MainActivity> portrait = new LayoutTemplate<MainActivity>()
-            .setDest(LayoutDestination.builder(MainActivity.class)
-                    //
-                    .beginConfig(h -> h.binding.mainTopContainer)
-                    .apply(viewLayout_port_top)
-                    .endConfig()
-                    //
-                    .beginConfig(h -> h.binding.mainMiddleContainer)
-                    .apply(viewLayout_port_middle)
-                    .endConfig()
-                    //
-                    .beginConfig(h -> h.binding.mainBottomContainer)
-                    .apply(viewLayout_port_bottom)
-                    .endConfig()
-                    //
-                    .build());
-    // endregion
+        public void toLand() {
+            if (orientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                return;
+            }
+            _toLand();
+        }
 
-    // region hide UI
+        public void toPort() {
+            if (orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                return;
+            }
+            _toPort();
+        }
+
+        private void _toLand() {
+            LogHelper.i();
+            orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            globalLayoutChangedReason = LayoutChangedReason.ROTATION_REQUESTED;
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+
+        @SuppressLint("SourceLockedOrientationActivity")
+        private void _toPort() {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+            globalLayoutChangedReason = LayoutChangedReason.ROTATION_REQUESTED;
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+    }
+
     private void hideSystemUI() {
         View decorView = getWindow().getDecorView();
         int uiOptions = //View.SYSTEM_UI_FLAG_LOW_PROFILE
@@ -341,5 +319,5 @@ public class MainActivity extends AppCompatActivity {
             actionBar.hide();
         }
     }
-    // endregion
+
 }

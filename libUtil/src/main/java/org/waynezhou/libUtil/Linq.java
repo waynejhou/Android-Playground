@@ -15,7 +15,8 @@ public class Linq<TItem> {
         this.src = src;
     }
 
-    public Linq(TItem[] array) {
+
+    public Linq(TItem... array) {
         this(Arrays.asList(array));
     }
 
