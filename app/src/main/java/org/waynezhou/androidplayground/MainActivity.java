@@ -1,6 +1,10 @@
 package org.waynezhou.androidplayground;
 
-import android.animation.AnimatorSet;
+import static org.waynezhou.libUtil.view_transition.LayoutTransitionPropertyBridges.PROP_HEI;
+import static org.waynezhou.libUtil.view_transition.LayoutTransitionPropertyBridges.PROP_LFT;
+import static org.waynezhou.libUtil.view_transition.LayoutTransitionPropertyBridges.PROP_TOP;
+import static org.waynezhou.libUtil.view_transition.LayoutTransitionPropertyBridges.PROP_WID;
+
 import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -8,7 +12,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,25 +19,18 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.waynezhou.androidplayground.databinding.ActivityMainBinding;
-import org.waynezhou.androidplayground.layout.LayoutManager;
-import org.waynezhou.androidplayground.view_transition.LayoutTransitionPropertyBridges;
-import org.waynezhou.androidplayground.view_transition.LayoutTransitionSteps;
-import org.waynezhou.androidplayground.view_transition.ValueGetter;
-import org.waynezhou.androidplayground.view_transition.ViewAnimatorArgs;
+import org.waynezhou.libUtil.view_transition.ViewAnimatorArgs;
+import org.waynezhou.libUtil.view_transition.ViewTransition;
 import org.waynezhou.libUtil.DelegateUtils;
 import org.waynezhou.libUtil.EnumClass;
 import org.waynezhou.libUtil.LogHelper;
 import org.waynezhou.libUtil.SensorToggle;
-import org.waynezhou.libUtil.StandardKt;
 import org.waynezhou.libUtil.eventArgs.SensorChangedEventArgs;
-
-import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
     // region Input from anything
     private ActivityMainBinding binding;
-    private LayoutManager<MainActivity> layoutManager;
     private SensorToggle gSensor;
 
     @Override
@@ -43,26 +39,28 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         LogHelper.i("Set Window Rotation Animation");
-        final WindowManager.LayoutParams lp = getWindow().getAttributes();
-        lp.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT;
+        //final WindowManager.LayoutParams lp = getWindow().getAttributes();
+        //lp.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT;
 
         orientation = getResources().getConfiguration().orientation;
 
         LogHelper.i("Set Main Activity Binding");
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         LogHelper.i("Set Binding Root GlobalLayoutListener");
-        binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(this::globalLayoutChanged);
+        binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(this::onGlobalLayoutChanged);
+        binding.getRoot().getViewTreeObserver().addOnPreDrawListener(this::onPreDraw);
+        binding.getRoot().getViewTreeObserver().addOnDrawListener(this::onDraw);
         LogHelper.i("Set Content View");
         globalLayoutChangedReason = LayoutChangedReason.CONTENT_VIEW_SET;
+        isContentViewSet = false;
         setContentView(binding.getRoot());
-
-        layoutManager = new LayoutManager<>(this);
 
         gSensor = new SensorToggle(this, Sensor.TYPE_ACCELEROMETER, SensorManager.SENSOR_DELAY_UI);
         gSensor.getEventGroup().on(e -> e.changed, this::onGSensorValueChanged);
     }
 
     private void onGSensorValueChanged(SensorChangedEventArgs e) {
+        if (!isContentViewSet) return;
         float[] axis = e.event.values;
         final float x = axis[0];
         final float y = axis[1];
@@ -154,18 +152,28 @@ public class MainActivity extends AppCompatActivity {
     @NonNull
     private Runnable onceRotationRequested = DelegateUtils.NothingRunnable;
     private volatile LayoutChangedReason globalLayoutChangedReason = null;
+    private volatile boolean isContentViewSet = false;
 
-    private void globalLayoutChanged() {
+    private void onGlobalLayoutChanged() {
         if (globalLayoutChangedReason == null) return;
         LogHelper.i(globalLayoutChangedReason);
         if (globalLayoutChangedReason.equals(LayoutChangedReason.CONTENT_VIEW_SET)) {
+            isContentViewSet = true;
             onContentViewSet();
         } else if (globalLayoutChangedReason.equals(LayoutChangedReason.ROTATION_REQUESTED)) {
+            onRotationRequested();
             onceRotationRequested.run();
             onceRotationRequested = DelegateUtils.NothingRunnable;
-            onRotationRequested();
         }
         globalLayoutChangedReason = null;
+    }
+
+
+    private boolean onPreDraw() {
+        return true;
+    }
+
+    private void onDraw() {
     }
 
     private void onContentViewSet() {
@@ -175,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void onRotationRequested() {
         refreshLayoutProperties();
-        layoutAuto();
+        //layoutAuto(ViewAnimatorArgs.builder().setDuration(500).build());
     }
 
     private Integer rootWidth = null;
@@ -212,31 +220,55 @@ public class MainActivity extends AppCompatActivity {
 
     // endregion
 
-    private void layoutAuto(){
-        if(orientation==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
-            //layoutToLand();
-        }else if(orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT){
-            layoutToPort();
+    private final ViewTransition<MainActivity> layoutLand = new ViewTransition.Builder<>(this)
+            .startAddStep(() -> binding.mainTopContainer)
+            .let(PROP_WID).startFromCurrent().toStep(h -> h.longSideLength).end()
+            .let(PROP_HEI).startFromCurrent().toStep(h -> h.shortSideLength).end()
+            .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
+            .let(PROP_TOP).startFromCurrent().toStep(h -> 0).end()
+            .endAddStep()
+            .startAddStep(() -> binding.mainMiddleContainer)
+            .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
+            .let(PROP_HEI).startFromCurrent().toStep(h -> h.shortSideLength).end()
+            .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
+            .let(PROP_TOP).startFromCurrent().toStep(h -> h.longSideLength).end()
+            .endAddStep()
+            .startAddStep(() -> binding.mainBottomContainer)
+            .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
+            .let(PROP_HEI).startFromCurrent().toStep(h -> h.shortSideLength).end()
+            .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
+            .let(PROP_TOP).startFromCurrent().toStep(h -> h.longSideLength).end()
+            .endAddStep()
+            .build();
+
+    private final ViewTransition<MainActivity> layoutPort = new ViewTransition.Builder<>(this)
+            .startAddStep(() -> binding.mainTopContainer)
+            .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
+            .let(PROP_HEI).startFromCurrent().toStep(h -> h.port_topContainer_height).end()
+            .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
+            .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_topContainer_top).end()
+            .endAddStep()
+            .startAddStep(() -> binding.mainMiddleContainer)
+            .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
+            .let(PROP_HEI).startFromCurrent().toStep(h -> h.port_middleContainer_height).end()
+            .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
+            .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_middleContainer_top).end()
+            .endAddStep()
+            .startAddStep(() -> binding.mainBottomContainer)
+            .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
+            .let(PROP_HEI).startFromCurrent().toStep(h -> h.port_bottomContainer_height).end()
+            .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
+            .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
+            .endAddStep()
+            .build();
+
+    private void layoutAuto() {
+        if (orientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+            layoutLand.runWithoutAnimation();
+
+        } else if (orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+            layoutPort.runWithoutAnimation();
         }
-    }
-    private void layoutToPort() {
-        LogHelper.i();
-        AnimatorSet set = new AnimatorSet();
-        set.playTogether(
-                new LayoutTransitionSteps.ViewStep(
-                        new HashMap<String, ValueGetter[]>(){{
-                            put(LayoutTransitionPropertyBridges.PROP_WIDTH, ValueGetter.prop(LayoutTransitionPropertyBridges.PROP_WIDTH)
-                                    .FromCurrentLayoutTo(new ValueGetter.FromValueHolder<MainActivity>(h->h.shortSideLength)));
-                        }}
-                )
-                        .generateAnimator(
-                                binding.mainTopContainer, this
-                                , StandardKt.apply(new ViewAnimatorArgs.Builder(),it->{
-                                    it.setDuration(500);
-                                }).build()
-                        )
-        );
-        set.start();
     }
 
     private final Control control = new Control();
@@ -294,12 +326,19 @@ public class MainActivity extends AppCompatActivity {
             LogHelper.i();
             orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
             globalLayoutChangedReason = LayoutChangedReason.ROTATION_REQUESTED;
+            onceRotationRequested = () -> {
+                layoutLand.createAnimatorSet(ViewAnimatorArgs.builder().setDuration(500).build()).start();
+            };
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }
 
         @SuppressLint("SourceLockedOrientationActivity")
         private void _toPort() {
             orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
+            onceRotationRequested = () -> {
+                layoutPort.createAnimatorSet(ViewAnimatorArgs.builder().setDuration(500).build()).start();
+            };
             globalLayoutChangedReason = LayoutChangedReason.ROTATION_REQUESTED;
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }

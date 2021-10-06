@@ -1,11 +1,9 @@
-package org.waynezhou.androidplayground.view_transition;
+package org.waynezhou.libUtil.view_transition;
 
 import android.animation.Animator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.view.View;
-
-import org.waynezhou.libUtil.LogHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,8 +1,4 @@
-package org.waynezhou.androidplayground.view_transition;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+package org.waynezhou.libUtil.view_transition;
 
 public class ViewPropFix<TValueHolder> {
 

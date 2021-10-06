@@ -1,16 +1,9 @@
-package org.waynezhou.androidplayground.view_transition;
+package org.waynezhou.libUtil.view_transition;
 
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-
-import org.waynezhou.libUtil.LogHelper;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class LayoutTransitionPropertyBridge {
     protected LayoutTransitionPropertyBridge() {
