@@ -14,15 +14,20 @@ public class ViewAnimatorArgs {
         private long duration = 0;
         private TimeInterpolator interpolator = new AccelerateInterpolator();
 
-        public void setDuration(long duration) {
+        public Builder setDuration(long duration) {
             this.duration = duration;
+            return this;
         }
 
-        public void setInterpolator(TimeInterpolator interpolator) {
+        public Builder setInterpolator(TimeInterpolator interpolator) {
             this.interpolator = interpolator;
+            return this;
         }
         public ViewAnimatorArgs build(){
             return new ViewAnimatorArgs(duration, interpolator);
         }
+    }
+    public static ViewAnimatorArgs.Builder builder(){
+        return new ViewAnimatorArgs.Builder();
     }
 }
