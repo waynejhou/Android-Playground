@@ -3,14 +3,25 @@ package org.waynezhou.libUtil;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class EnumClass<T> {
     public final T identifier;
     public final String statement;
-    private Class<T> clz;
+    private final Class<T> clz;
+    private static Map<Object, EnumClass<?>> map = new HashMap<>();
+    public static Map<Object, EnumClass<?>> getMap(){
+        return map;
+    }
     protected EnumClass(Class<T> clz, T identifier, String statement) {
         this.clz = clz;
         this.identifier = identifier;
         this.statement = statement;
+        map = new HashMap<>(map);
+        map.put((Object) this.identifier, this);
+        map = Collections.unmodifiableMap(map);
     }
 
     @Override

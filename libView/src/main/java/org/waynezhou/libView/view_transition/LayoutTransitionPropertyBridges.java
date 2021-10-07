@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil.view_transition;
+package org.waynezhou.libView.view_transition;
 
 import java.util.HashMap;
 
@@ -55,5 +55,14 @@ public final class LayoutTransitionPropertyBridges {
         put(PROP_TRX, translationX);
         put(PROP_TRY, translationY);
          */
+    }};
+    public static final HashMap<String, String> transposeMap = new HashMap<String, String>(){{
+        put(PROP_WID, PROP_HEI);
+        put(PROP_HEI, PROP_WID);
+        put(PROP_LFT, PROP_TOP);
+        put(PROP_RGT, PROP_BTM);
+        put(PROP_TOP, PROP_LFT);
+        put(PROP_BTM, PROP_RGT);
+        put(PROP_GVT, PROP_GVT);
     }};
 }

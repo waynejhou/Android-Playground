@@ -1,216 +1,219 @@
 package org.waynezhou.libView;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
-import android.media.MediaTimestamp;
-import android.util.AttributeSet;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.Gravity;
+import android.view.Surface;
+import android.view.TextureView;
+import android.view.View;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
+import org.waynezhou.libUtil.DelegateUtils;
 import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.StandardKt;
+import org.waynezhou.libUtil.ThreadUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-public class MediaView extends SurfaceView {
-    private MediaPlayer mediaPlayer;
-    private final SurfaceHolder holder;
-    private final Thread thread;
-    private boolean looping = false;
-    private PositionChangedListener positionChangedListener = timestamp -> {
-    };
-    private MediaPlayer.OnCompletionListener completionListener = (e) -> {
-    };
-    private MediaPlayer.OnPreparedListener preparedListener = (e) -> {
-    };
-    private MediaPlayer.OnInfoListener infoListene = (MediaPlayer mp, int what, int extra) -> {
-        return false;
-    };
-    private MediaPlayer.OnErrorListener errorListener = (MediaPlayer mp, int what, int extra) -> {
-        return false;
-    };
-    private StandardKt.RunBlock<MediaPlayer> dataSourceRunBlock = (it) -> {
-    };
-    private final SurfaceHolder.Callback callback = new SurfaceHolder.Callback() {
-        int position = 0;
-
-        @Override
-        public void surfaceCreated(@NonNull SurfaceHolder holder) {
-            LogHelper.i("media view surfaceCreated");
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setOnInfoListener((MediaPlayer mp, int what, int extra) -> {
-                LogHelper.d("MediaView OnInfoListener what: " + what + " extra: " + extra);
-                return true;
-            });
-            mediaPlayer.setOnPreparedListener(e -> {
-                LogHelper.d("setOnPreparedListener");
-                mediaPlayer.seekTo(position);
-            });
-            mediaPlayer.setOnCompletionListener(completionListener);
-            mediaPlayer.setOnErrorListener(errorListener);
-            mediaPlayer.setLooping(looping);
-            mediaPlayer.setOnSeekCompleteListener(e -> {
-                LogHelper.d("Seek Complete");
-                if (position != 0) {
-                    mediaPlayer.setDisplay(holder);
-                    mediaPlayer.start();
-                } else {
-                    mediaPlayer.setDisplay(holder);
-                    preparedListener.onPrepared(e);
-                }
-            });
-            dataSourceRunBlock.run(mediaPlayer);
-            mediaPlayer.prepareAsync();
-        }
-
-        @Override
-        public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-            LogHelper.i("media view surfaceChanged");
-            LogHelper.d(mediaPlayer.isPlaying());
-            //mediaPlayer.setDisplay(holder);
-        }
-
-        @Override
-        public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-            LogHelper.i("media view surfaceDestroyed");
-            //mediaPlayer.setDisplay(null);
-            position = mediaPlayer.getCurrentPosition();
-            mediaPlayer.reset();
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-    };
+public class MediaView extends FrameLayout implements TextureView.SurfaceTextureListener {
+    private final TextureView textureView;
+    public final MediaPlayer player;
 
     public MediaView(Context context) {
         super(context);
-        this.holder = this.getHolder();
-        holder.addCallback(callback);
-        thread = new Thread(this::invokeMediaTimestamp);
-        thread.start();
+        textureView = new TextureView(context);
+        textureView.setSurfaceTextureListener(this);
+        this.addView(textureView);
+        this.addOnLayoutChangeListener(this::onLayoutChange);
+        player = new MediaPlayer();
+        resetPlayer();
     }
 
-    public MediaView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        this.holder = this.getHolder();
-        holder.addCallback(callback);
-        thread = new Thread(this::invokeMediaTimestamp);
-        thread.start();
-    }
-
-    public MediaView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        this.holder = this.getHolder();
-        holder.addCallback(callback);
-        thread = new Thread(this::invokeMediaTimestamp);
-        thread.start();
-    }
-
-    public MediaView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        this.holder = this.getHolder();
-        holder.addCallback(callback);
-        thread = new Thread(this::invokeMediaTimestamp);
-        thread.start();
+    private void resetPlayer() {
+        player.reset();
+        player.setOnPreparedListener(this::onPlayerPrepared);
+        player.setOnCompletionListener(this::onPlayerCompletion);
+        player.setOnSeekCompleteListener(this::onPlayerSeekComplete);
+        isPlayerPrepared = false;
     }
 
 
-    private void invokeMediaTimestamp() {
-        while (true) {
-            try {
-                Thread.sleep(500);
-                if (mediaPlayer != null) {
-                    MediaTimestamp timestamp = mediaPlayer.getTimestamp();
-                    if (timestamp != null) {
-                        positionChangedListener.run(timestamp);
-                    }
-                }
-            } catch (InterruptedException e) {
-                LogHelper.e("Video View Error", e);
-            }
+    private volatile boolean isPlayerPrepared = false;
+    @NonNull
+    private Runnable onVideoPrepared = DelegateUtils.NothingRunnable;
+
+    private void onPlayerPrepared(MediaPlayer mediaPlayer) {
+        isPlayerPrepared = true;
+        onVideoPrepared.run();
+    }
+
+    public boolean isPlayerPrepared() {
+        return isPlayerPrepared;
+    }
+
+    @NonNull
+    private Runnable onVideoCompletion = DelegateUtils.NothingRunnable;
+
+    private void onPlayerCompletion(MediaPlayer mediaPlayer) {
+        onVideoCompletion.run();
+    }
+
+    @NonNull
+    private Runnable onceVideoSeekComplete = DelegateUtils.NothingRunnable;
+
+    private void onPlayerSeekComplete(MediaPlayer mediaPlayer) {
+        onceVideoSeekComplete.run();
+        onceVideoSeekComplete = DelegateUtils.NothingRunnable;
+    }
+
+    public void setOnceVideoSeekComplete(@NonNull Runnable onceVideoSeekComplete) {
+        this.onceVideoSeekComplete = onceVideoSeekComplete;
+    }
+
+    private void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+        //textureView.requestLayout();
+        setTextureSize();
+    }
+
+    private volatile int lastWid = 0;
+    private volatile int lastHei = 0;
+
+    private void setTextureSize() {
+        if (!isPlayerPrepared) return;
+        if (lastWid == getWidth() && lastHei == getHeight()) return;
+        lastWid = getWidth();
+        lastHei = getHeight();
+        //LogHelper.d("%d, %d", lastWid, lastHei);
+        final float ratio = Math.min((float) getWidth() / (float) player.getVideoWidth(), (float) getHeight() / (float) player.getVideoHeight());
+        //LogHelper.d("%d, %d",player.getVideoWidth(),  player.getVideoHeight());
+        //LogHelper.d("%f, %f, %f", ratio, ratio * player.getVideoWidth(), ratio * player.getVideoHeight());
+        textureView.getLayoutParams().width = Math.round(ratio * player.getVideoWidth());
+        textureView.getLayoutParams().height = Math.round(ratio * player.getVideoHeight());
+        ((LayoutParams) textureView.getLayoutParams()).gravity = Gravity.CENTER;
+        post(textureView::requestLayout);
+    }
+
+    private volatile boolean isSurfaceTextureAvailable = false;
+
+    @Override
+    public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
+        isSurfaceTextureAvailable = true;
+        player.setSurface(new Surface(surface));
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surface, int width, int height) {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
+        return false;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {
+
+    }
+
+    private Section section;
+    private Thread sectionTrackingThd;
+
+    private void disposeTrackingThd() {
+        if (sectionTrackingThd != null) {
+            sectionTrackingThd.interrupt();
+            sectionTrackingThd = null;
         }
     }
 
-    // region load
-    public MediaView loadFromAssets(AppCompatActivity activity, String path) {
-        dataSourceRunBlock = (mp) -> {
-            try {
-                mediaPlayer.setDataSource(new InputStreamMediaDataSource(activity.getAssets().open(path)));
-            } catch (IOException e) {
-                LogHelper.e("Loading Data Source Error", e);
-            }
-        };
-        return this;
+    public void setSection(Section section) {
+        if (!isPlayerPrepared) throw new IllegalArgumentException();
+        disposeTrackingThd();
+        if (section == null) {
+            this.section = null;
+        } else {
+            this.section = section;
+            player.seekTo(section.start_msec);
+            sectionTrackingThd = ThreadUtils.interval(33, () -> {
+                if (Math.abs(player.getCurrentPosition() - this.section.end_msec) < 10) {
+                    player.seekTo(this.section.start_msec);
+                }
+            });
+            sectionTrackingThd.start();
+        }
     }
 
-    public MediaView loadFromPath(String path) {
-        dataSourceRunBlock = (mp) -> {
-            try {
-                mediaPlayer.setDataSource(path);
-            } catch (IOException e) {
-                LogHelper.e("Loading Data Source Error", e);
-            }
-        };
-        return this;
+    public static class Section {
+        public final int fps;
+        public final int startFrame;
+        public final int endFrame;
+        public final int start_msec, end_msec;
+        public final boolean isLooping;
+
+        public Section(int fps, int startFrame, int endFrame, boolean looping) {
+            this.fps = fps;
+            this.startFrame = startFrame;
+            this.endFrame = endFrame;
+            this.start_msec = frame2millisecond(fps, startFrame);
+            this.end_msec = frame2millisecond(fps, endFrame);
+            this.isLooping = looping;
+        }
+
+        public static int frame2millisecond(int fps, int frame) {
+            int result = (int) (((float) frame / fps) * 1000f);
+            return Math.max(result, 0);
+        }
+
+        public static int second2Frame(int fps, long milliSecond) {
+            return (int) ((milliSecond * fps) / 1000);
+        }
     }
 
-    public MediaView loadFromInputStream(InputStream stream) {
-        dataSourceRunBlock = (mp) -> {
-            mediaPlayer.setDataSource(new InputStreamMediaDataSource(stream));
-        };
-        return this;
-    }
-    // endregion load
-
-    public MediaView setLooping(boolean looping) {
-        this.looping = looping;
-        return this;
+    public VideoConfiguration configPrepareVideo(String path) {
+        return new VideoConfiguration(path);
     }
 
-    public MediaView setOnPreparedListener(MediaPlayer.OnPreparedListener listener) {
-        preparedListener = listener;
-        return this;
+    public class VideoConfiguration {
+        private final String path;
+        private Runnable onPrepared = DelegateUtils.NothingRunnable;
+        private Runnable onCompletion = DelegateUtils.NothingRunnable;
+
+        protected VideoConfiguration(String path) {
+            this.path = path;
+        }
+
+        public VideoConfiguration setOnCompletion(@NonNull Runnable onCompletion) {
+            this.onCompletion = onCompletion;
+            return this;
+        }
+
+        public VideoConfiguration setOnPrepared(@NonNull Runnable onPrepared) {
+            this.onPrepared = onPrepared;
+            return this;
+        }
+
+        private boolean looping;
+
+        public VideoConfiguration setLooping(boolean looping) {
+            this.looping = looping;
+            return this;
+        }
+
+        public void prepare() throws IOException {
+            resetPlayer();
+            player.setDataSource(path);
+            MediaView.this.onVideoPrepared = onPrepared;
+            MediaView.this.onVideoCompletion = onCompletion;
+            player.setLooping(looping);
+            player.prepareAsync();
+        }
     }
 
-    public MediaView setOnCompletionListener(MediaPlayer.OnCompletionListener listener) {
-        completionListener = listener;
-        return this;
-    }
-
-    public MediaView setOnErrorListener(MediaPlayer.OnErrorListener listener) {
-        errorListener = listener;
-        return this;
-    }
-
-    public MediaView setOnPositionChanged(PositionChangedListener listener) {
-        this.positionChangedListener = listener;
-        return this;
-    }
-
-    public MediaView start() {
-        mediaPlayer.start();
-        return this;
-    }
-
-    public MediaView pause() {
-        mediaPlayer.pause();
-        return this;
-    }
-
-    public void release() {
-        mediaPlayer.release();
-    }
-
-    @FunctionalInterface
-    public interface PositionChangedListener {
-        void run(MediaTimestamp timestamp);
-    }
-
-    @FunctionalInterface
-    public interface ReadyToStartListener {
-        void readyToStart();
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        disposeTrackingThd();
     }
 }

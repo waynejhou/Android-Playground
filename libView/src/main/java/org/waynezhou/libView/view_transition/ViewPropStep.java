@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil.view_transition;
+package org.waynezhou.libView.view_transition;
 
 import android.animation.PropertyValuesHolder;
 
@@ -44,15 +44,22 @@ public class ViewPropStep<TValueHolder> {
         }
         public ViewStep.Builder<TValueHolder> end(){
             if(valueGetters.size()<=0) throw new IllegalArgumentException();
-            host.propSteps.add(new ViewPropStep<>(propName, Collections.unmodifiableList(valueGetters)));
+            for(int i = 0; i < host.propSteps.size(); i++){
+                if(host.propSteps.get(i).propName.equals(propName)){
+                    host.propSteps.remove(i);
+                    break;
+                }
+            }
+            host.propSteps.add(new ViewPropStep<>(propName, valueGetters));
             return host;
         }
     }
+
     private final String propName;
     private final List<ValueGetter> valueGetters;
     private ViewPropStep(String propName, List<ValueGetter> valueGetters){
         this.propName = propName;
-        this.valueGetters = valueGetters;
+        this.valueGetters = Collections.unmodifiableList(valueGetters);
     }
 
     protected PropertyValuesHolder createHolder(ViewTransition.ViewGetter viewGetter, TValueHolder holder){
@@ -78,6 +85,12 @@ public class ViewPropStep<TValueHolder> {
             ((ValueGetter.FromValueHolder<TValueHolder>)lastValueGetter).setHolder(holder);
         }
         return new ViewPropFinalStep(propName, lastValueGetter.get());
+    }
+    public ViewPropStep<TValueHolder> transpose() {
+        if(LayoutTransitionPropertyBridges.transposeMap.containsKey(this.propName)){
+            return new ViewPropStep<>(LayoutTransitionPropertyBridges.transposeMap.get(this.propName), this.valueGetters);
+        }
+        return this;
     }
 
     protected static class ViewPropFinalStep{

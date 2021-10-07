@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil.view_transition;
+package org.waynezhou.libView.view_transition;
 
 public class ViewPropFix<TValueHolder> {
 
@@ -25,10 +25,17 @@ public class ViewPropFix<TValueHolder> {
             return host;
         }
     }
+
     protected final String propName;
     protected final ValueGetter getter;
     public ViewPropFix(String propName, ValueGetter getter) {
         this.propName = propName;
         this.getter = getter;
+    }
+    public ViewPropFix<TValueHolder> transpose() {
+        if(LayoutTransitionPropertyBridges.transposeMap.containsKey(this.propName)){
+            return new ViewPropFix<>(LayoutTransitionPropertyBridges.transposeMap.get(this.propName), this.getter);
+        }
+        return this;
     }
 }

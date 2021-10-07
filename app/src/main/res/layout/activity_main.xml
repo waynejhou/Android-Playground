@@ -7,14 +7,7 @@
         android:id="@+id/main_top_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/SteelBlue">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Top"
-            android:textSize="32sp"/>
-    </FrameLayout>
+        android:background="@color/SteelBlue"/>
     <FrameLayout
         android:id="@+id/main_middle_container"
         android:layout_width="0dp"
@@ -39,4 +32,9 @@
             android:text="Bottom"
             android:textSize="32sp"/>
     </FrameLayout>
+    <View
+        android:id="@+id/main_focus_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/focus_view_border"/>
 </FrameLayout>

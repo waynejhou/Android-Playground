@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil.view_transition;
+package org.waynezhou.libView.view_transition;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -10,46 +10,97 @@ import java.util.List;
 
 public class ViewTransition<TValueHolder> {
 
-    public static class Builder<TValueHolder>{
+    public static class Builder<TValueHolder> {
         private final TValueHolder valHolder;
         protected final List<ViewStep<TValueHolder>> viewSteps = new ArrayList<>();
+        protected final List<ConditionalViewStep<TValueHolder>> conditionalViewSteps = new ArrayList<>();
+
         public Builder(TValueHolder valHolder) {
             this.valHolder = valHolder;
         }
 
-        public ViewStep.Builder<TValueHolder> startAddStep(ViewGetter viewGetter){
+        public ViewStep.Builder<TValueHolder> startAddStep(ViewGetter viewGetter) {
             return new ViewStep.Builder<>(this, viewGetter);
         }
-        public ViewTransition<TValueHolder> build(){
-            return new ViewTransition<TValueHolder>(valHolder, Collections.unmodifiableList(viewSteps));
+
+        public ViewStep.Builder<TValueHolder> startAddStep(Condition condition, ViewGetter viewGetter) {
+            return new ViewStep.Builder<>(this, viewGetter, condition);
+        }
+
+        public ViewTransition<TValueHolder> build() {
+            return new ViewTransition<>(valHolder, viewSteps, conditionalViewSteps);
         }
     }
+
 
     private final TValueHolder valHolder;
     private final List<ViewStep<TValueHolder>> viewSteps;
-    private ViewTransition(TValueHolder valHolder, List<ViewStep<TValueHolder>> viewSteps) {
+    protected final List<ConditionalViewStep<TValueHolder>> conditionalViewSteps;
+
+    private ViewTransition(TValueHolder valHolder, List<ViewStep<TValueHolder>> viewSteps, List<ConditionalViewStep<TValueHolder>> conditionalViewSteps) {
         this.valHolder = valHolder;
-        this.viewSteps = viewSteps;
+        this.viewSteps = Collections.unmodifiableList(viewSteps);
+        this.conditionalViewSteps = Collections.unmodifiableList(conditionalViewSteps);
     }
 
-    public AnimatorSet createAnimatorSet(ViewAnimatorArgs args){
+    public AnimatorSet createAnimatorSet(ViewAnimatorArgs args) {
         AnimatorSet set = new AnimatorSet();
         List<Animator> animators = new ArrayList<>();
-        for(int i =0;i < viewSteps.size();i++){
+        for (int i = 0; i < viewSteps.size(); i++) {
             animators.add(viewSteps.get(i).createAnimator(valHolder, args));
+        }
+        for (int i = 0; i < conditionalViewSteps.size(); i++) {
+            ConditionalViewStep<TValueHolder> cvStep = conditionalViewSteps.get(i);
+            if (cvStep.condition.isPassed()) {
+                animators.add(cvStep.viewStep.createAnimator(valHolder, args));
+            }
         }
         set.playTogether(animators);
         return set;
     }
 
-    public void runWithoutAnimation(){
-        for(int i =0;i < viewSteps.size();i++){
-            viewSteps.get(i).createRunnable(valHolder).run();
+    public void runWithoutAnimation(boolean withRequestLayout) {
+        for (int i = 0; i < viewSteps.size(); i++) {
+            viewSteps.get(i).createExecutor(valHolder).execute(withRequestLayout);
+        }
+        for (int i = 0; i < conditionalViewSteps.size(); i++) {
+            ConditionalViewStep<TValueHolder> cvStep = conditionalViewSteps.get(i);
+            if (cvStep.condition.isPassed()) {
+                cvStep.viewStep.createExecutor(valHolder).execute(withRequestLayout);
+            }
         }
     }
 
-    public interface ViewGetter{
+    public ViewTransition<TValueHolder> transpose() {
+        final List<ViewStep<TValueHolder>> transposedViewSteps = new ArrayList<>();
+        for (ViewStep<TValueHolder> vStep : this.viewSteps) {
+            final ViewStep<TValueHolder> transposedViewStep = vStep.transpose();
+            transposedViewSteps.add(transposedViewStep);
+        }
+        final List<ConditionalViewStep<TValueHolder>> transposedConditionalViewSteps = new ArrayList<>();
+        for (ConditionalViewStep<TValueHolder> cvStep : this.conditionalViewSteps) {
+            final ConditionalViewStep<TValueHolder> transposedConditionalViewStep = new ConditionalViewStep<>(cvStep.condition, cvStep.viewStep.transpose());
+            transposedConditionalViewSteps.add(transposedConditionalViewStep);
+        }
+
+        return new ViewTransition<>(this.valHolder, transposedViewSteps, transposedConditionalViewSteps);
+    }
+
+    protected static class ConditionalViewStep<TValueHolder> {
+        protected final Condition condition;
+        protected final ViewStep<TValueHolder> viewStep;
+
+        public ConditionalViewStep(Condition condition, ViewStep<TValueHolder> viewStep) {
+            this.condition = condition;
+            this.viewStep = viewStep;
+        }
+    }
+
+    public interface ViewGetter {
         View get();
     }
 
+    public interface Condition {
+        boolean isPassed();
+    }
 }
