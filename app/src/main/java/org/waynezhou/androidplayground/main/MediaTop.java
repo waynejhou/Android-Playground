@@ -7,7 +7,7 @@ import org.waynezhou.libView.MediaView;
 
 import java.io.IOException;
 
-final class TopMedia {
+final class MediaTop {
     private Activity host;
 
     void init(Activity activity) {
@@ -31,7 +31,7 @@ final class TopMedia {
         view = new MediaView(host);
         host.binding.mainTopContainer.addView(view);
         try {
-            view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video.mp4")
+            view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video port.mp4")
                     .setOnPrepared(() -> {
                         view.setOnceVideoSeekComplete(() -> {
                             view.player.start();

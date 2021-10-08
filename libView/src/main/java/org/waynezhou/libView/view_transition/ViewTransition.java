@@ -12,18 +12,31 @@ public class ViewTransition<TValueHolder> {
 
     public static class Builder<TValueHolder> {
         private final TValueHolder valHolder;
-        protected final List<ViewStep<TValueHolder>> viewSteps = new ArrayList<>();
-        protected final List<ConditionalViewStep<TValueHolder>> conditionalViewSteps = new ArrayList<>();
+        protected final List<ViewStep<TValueHolder>> viewSteps;
+        protected final List<ConditionalViewStep<TValueHolder>> conditionalViewSteps;
 
         public Builder(TValueHolder valHolder) {
             this.valHolder = valHolder;
+            this.viewSteps = new ArrayList<>();
+            this.conditionalViewSteps = new ArrayList<>();
+        }
+        public Builder(ViewTransition<TValueHolder> other){
+            this.valHolder = other.valHolder;
+            this.viewSteps = new ArrayList<>(other.viewSteps);
+            this.conditionalViewSteps = new ArrayList<>(other.conditionalViewSteps);
         }
 
-        public ViewStep.Builder<TValueHolder> startAddStep(ViewGetter viewGetter) {
+        public ViewStep.Builder<TValueHolder> $_startAddStep(ViewGetter viewGetter) {
             return new ViewStep.Builder<>(this, viewGetter);
         }
 
-        public ViewStep.Builder<TValueHolder> startAddStep(Condition condition, ViewGetter viewGetter) {
+        public Builder<TValueHolder> $_addStep(ViewGetter viewGetter, ViewStep.ViewPreBuild<TValueHolder> preBuild) {
+            ViewStep.Builder<TValueHolder> builder = new ViewStep.Builder<>(this, viewGetter);
+            preBuild.build(builder);
+            return builder.$_endAddStep();
+        }
+
+        public ViewStep.Builder<TValueHolder> $_startAddStep(Condition condition, ViewGetter viewGetter) {
             return new ViewStep.Builder<>(this, viewGetter, condition);
         }
 

@@ -10,10 +10,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidPlayground">
         <activity
-            android:name=".MainActivity"
+            android:name=".main.Activity"
             android:configChanges="orientation|screenLayout|screenSize|keyboard|keyboardHidden"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:screenOrientation="unspecified">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

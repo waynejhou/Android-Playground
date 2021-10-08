@@ -50,7 +50,7 @@ public class ViewStep<TValueHolder> {
             return this;
         }
 
-        public ViewTransition.Builder<TValueHolder> endAddStep() {
+        public ViewTransition.Builder<TValueHolder> $_endAddStep() {
             if(condition!=null){
                 host.conditionalViewSteps.add(new ViewTransition.ConditionalViewStep<>(condition, new ViewStep<>(viewGetter, propSteps, propFixes, preAction)));
             }else{

@@ -7,7 +7,7 @@ import org.waynezhou.libView.MediaView;
 
 import java.io.IOException;
 
-final class MiddleMedia {
+final class MediaMiddle {
     private Activity host;
 
     void init(Activity activity) {
@@ -32,7 +32,7 @@ final class MiddleMedia {
         view = new MediaView(host);
         host.binding.mainMiddleContainer.addView(view);
         try {
-            view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video port.mp4")
+            view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video.mp4")
                     .setOnPrepared(() -> {
                         view.setOnceVideoSeekComplete(() -> {
                             view.player.start();

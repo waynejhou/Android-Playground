@@ -2,12 +2,12 @@ package org.waynezhou.androidplayground.main;
 
 import org.waynezhou.libUtil.EnumClass;
 
-final class FocusPositions extends EnumClass.Int {
-    static final FocusPositions FOCUS_TOP = new FocusPositions(0, "Focus Top");
-    static final FocusPositions FOCUS_MIDDLE = new FocusPositions(1, "Focus Middle");
-    static final FocusPositions FOCUS_BOTTOM = new FocusPositions(2, "Focus Bottom");
+final class FocusPosition extends EnumClass.Int {
+    static final FocusPosition FOCUS_TOP = new FocusPosition(0, "Focus Top");
+    static final FocusPosition FOCUS_MIDDLE = new FocusPosition(1, "Focus Middle");
+    static final FocusPosition FOCUS_BOTTOM = new FocusPosition(2, "Focus Bottom");
 
-    private FocusPositions(int identifier, String statement) {
+    private FocusPosition(int identifier, String statement) {
         super(identifier, statement);
     }
 }
