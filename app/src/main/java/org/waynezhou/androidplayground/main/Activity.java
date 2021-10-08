@@ -5,6 +5,8 @@ import static org.waynezhou.androidplayground.MainActivity.LayoutChangedReason.*
 import static org.waynezhou.libView.view_transition.LayoutTransitionPropertyBridges.*;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -145,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
         LogHelper.d(keyCode);
         if (keyCode == KeyEvent.KEYCODE_1) {
             control.sendSignal(ControlSignal.LAYOUT_PORT_STD);
-
         }
         if (keyCode == KeyEvent.KEYCODE_2) {
             control.sendSignal(ControlSignal.LAYOUT_PORT_TOP_HALF);
@@ -185,262 +186,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private final Layout layout = new Layout();
+    private final MainActivityLayout layout = new MainActivityLayout(this);
     private final static ViewAnimatorArgs DefaultAnimatorArgs = ViewAnimatorArgs.builder()
             .setDuration(500)
             .setInterpolator(new DecelerateInterpolator())
             .build();
 
-    private class Layout {
 
-        private void onRootDraw() {
-        }
-
-        private boolean onPreDraw() {
-            return true;
-        }
-
-        @NonNull
-        private Runnable onceRotationRequested = DelegateUtils.NothingRunnable;
-
-        public void setOnceRotationRequested(@NonNull Runnable run) {
-            onceRotationRequested = run;
-        }
-
-        private LayoutChangedReason changedReason = null;
-
-        private boolean isContentViewSet = false;
-
-        private void onGlobalLayoutChanged() {
-            if (changedReason == null) return;
-            LogHelper.i(changedReason);
-            if (changedReason.equals(CONTENT_VIEW_SET)) {
-                isContentViewSet = true;
-                onContentViewSet();
-            } else if (changedReason.equals(LayoutChangedReason.ROTATION_REQUESTED)) {
-                onRotationRequested();
-                onceRotationRequested.run();
-                onceRotationRequested = DelegateUtils.NothingRunnable;
-            }
-            changedReason = null;
-        }
-
-        private void onContentViewSet() {
-            refreshLayoutProperties();
-            if (rotate.orientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                layout(landCurrent);
-
-            } else if (rotate.orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                layout(portCurrent);
-            }
-        }
-
-        private void onRotationRequested() {
-            refreshLayoutProperties();
-            //layoutAuto(ViewAnimatorArgs.builder().setDuration(500).build());
-        }
-
-        private Integer rootWidth = null;
-        private Integer rootHeight = null;
-        private Integer rootLeft = null;
-        private Integer rootTop = null;
-        private Integer longSideLength = null;
-        private Integer shortSideLength = null;
-
-        private Integer port_topContainer_height = null;
-        private Integer port_topContainer_top = null;
-        private Integer port_middleContainer_top = null;
-        private Integer port_middleContainer_height = null;
-        private Integer port_bottomContainer_top = null;
-        private Integer port_bottomContainer_height = null;
-
-        private void refreshLayoutProperties() {
-            final int width = binding.getRoot().getWidth();
-            final int height = binding.getRoot().getHeight();
-            LogHelper.d("globalLayoutChanged root: [Width: %d, Height: %d]", width, height);
-            rootWidth = width;
-            rootHeight = height;
-            longSideLength = Math.max(rootWidth, rootHeight);
-            shortSideLength = Math.min(rootWidth, rootHeight);
-            rootLeft = 0;
-            rootTop = 0;
-            port_topContainer_top = rootTop;
-            port_topContainer_height = Math.round(shortSideLength * 9f / 16f);
-            port_middleContainer_top = rootTop + port_topContainer_height + 50;
-            port_middleContainer_height = Math.round(shortSideLength * 9f / 16f);
-            port_bottomContainer_top = port_middleContainer_top + port_middleContainer_height + 50;
-            port_bottomContainer_height = longSideLength - port_bottomContainer_top;
-        }
-
-        private final ViewStep.ViewPreBuild<Layout> topContainer = it -> it
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.port_topContainer_height).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_topContainer_top).end();
-
-        private final ViewStep.ViewPreBuild<Layout> middleContainer = it -> it
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.port_middleContainer_height).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_middleContainer_top).end();
-
-        private final ViewStep.ViewPreBuild<Layout> bottomContainer = it -> it
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.port_bottomContainer_height).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end();
-
-        private final ViewTransition<Layout> land_std = new ViewTransition.Builder<>(this)
-                .startAddStep(() -> binding.mainTopContainer)
-                .pre(v -> v.setZ(1f))
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.longSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> 0).end()
-                .endAddStep()
-                .startAddStep(() -> binding.mainMiddleContainer)
-                .pre(v -> v.setZ(0.5f))
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> h.longSideLength).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> 0).end()
-                .endAddStep()
-                .startAddStep(() -> binding.mainBottomContainer)
-                .pre(v -> v.setZ(0f))
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> h.longSideLength).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> 0).end()
-                .endAddStep()
-                .startAddStep(() -> binding.mainFocusView)
-                .pre(v -> v.setZ(0))
-                .endAddStep()
-                .build();
-
-        private
-        final ViewTransition<Layout> port_std = new ViewTransition.Builder<>(this)
-                /* mainTopContainer */
-                .startAddStep(() -> binding.mainTopContainer)
-                .pre(v -> v.setZ(1f))
-                .preBuild(topContainer)
-                .endAddStep()
-                /* mainMiddleContainer */
-                .startAddStep(() -> binding.mainMiddleContainer)
-                .pre(v -> v.setZ(0.5f))
-                .preBuild(middleContainer)
-                .endAddStep()
-                /* mainBottomContainer */
-                .startAddStep(() -> binding.mainBottomContainer)
-                .pre(v -> v.setZ(0f))
-                .preBuild(bottomContainer)
-                .endAddStep()
-                /* mainFocusView */
-                .startAddStep(() -> focusView.focusPos == FocusPositions.FOCUS_TOP, () -> binding.mainFocusView)
-                .pre(v -> v.setZ(1))
-                .preBuild(topContainer)
-                .endAddStep()
-                .startAddStep(() -> focusView.focusPos == FocusPositions.FOCUS_MIDDLE, () -> binding.mainFocusView)
-                .pre(v -> v.setZ(1))
-                .preBuild(middleContainer)
-                .endAddStep()
-                .startAddStep(() -> focusView.focusPos == FocusPositions.FOCUS_BOTTOM, () -> binding.mainFocusView)
-                .pre(v -> v.setZ(1))
-                .preBuild(bottomContainer)
-                .endAddStep()
-                .build();
-
-        private final ViewTransition<Layout> port_topFull = new ViewTransition.Builder<>(this)
-                .startAddStep(() -> binding.mainTopContainer)
-                .pre(v -> v.setZ(1f))
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.longSideLength).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> 0).end()
-                .endAddStep()
-                .startAddStep(() -> binding.mainMiddleContainer)
-                .pre(v -> v.setZ(0.5f))
-                .preBuild(middleContainer)
-                .let(PROP_TOP).startFromCurrent().toStep(h -> h.longSideLength).end()
-                .endAddStep()
-                .startAddStep(() -> binding.mainBottomContainer)
-                .pre(v -> v.setZ(0f))
-                .preBuild(bottomContainer)
-                .let(PROP_TOP).startFromCurrent().toStep(h -> h.longSideLength).end()
-                .endAddStep()
-                /* mainFocusView */
-                .startAddStep(() -> focusView.focusPos == FocusPositions.FOCUS_TOP, () -> binding.mainFocusView)
-                .pre(v -> v.setZ(1))
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.longSideLength).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> 0).end()
-                .endAddStep()
-                .startAddStep(() -> focusView.focusPos == FocusPositions.FOCUS_MIDDLE, () -> binding.mainFocusView)
-                .pre(v -> v.setZ(0))
-                .endAddStep()
-                .startAddStep(() -> focusView.focusPos == FocusPositions.FOCUS_BOTTOM, () -> binding.mainFocusView)
-                .pre(v -> v.setZ(0))
-                .endAddStep()
-                .build();
-
-        private final ViewTransition<Layout> port_topHalf = new ViewTransition.Builder<>(this)
-                .startAddStep(() -> binding.mainTopContainer)
-                .pre(v -> v.setZ(1f))
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> 0).end()
-                .endAddStep()
-                .startAddStep(() -> binding.mainMiddleContainer)
-                .pre(v -> v.setZ(0f))
-                .preBuild(middleContainer)
-                .let(PROP_TOP).startFromCurrent().toStep(h -> h.longSideLength).end()
-                .endAddStep()
-                .startAddStep(() -> binding.mainBottomContainer)
-                .pre(v -> v.setZ(1f))
-                .preBuild(bottomContainer)
-                .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
-                .endAddStep()
-                /* mainFocusView */
-                .startAddStep(() -> focusView.focusPos == FocusPositions.FOCUS_TOP, () -> binding.mainFocusView)
-                .pre(v -> v.setZ(1))
-                .let(PROP_WID).startFromCurrent().toStep(h -> h.shortSideLength).end()
-                .let(PROP_HEI).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
-                .let(PROP_LFT).startFromCurrent().toStep(h -> 0).end()
-                .let(PROP_TOP).startFromCurrent().toStep(h -> 0).end()
-                .endAddStep()
-                .startAddStep(() -> focusView.focusPos == FocusPositions.FOCUS_MIDDLE, () -> binding.mainFocusView)
-                .pre(v -> v.setZ(0))
-                .endAddStep()
-                .startAddStep(() -> focusView.focusPos == FocusPositions.FOCUS_BOTTOM, () -> binding.mainFocusView)
-                .pre(v -> v.setZ(1f))
-                .preBuild(bottomContainer)
-                .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
-                .endAddStep()
-                .build();
-
-        private ViewTransition<Layout> landCurrent = land_std;
-        private ViewTransition<Layout> portCurrent = port_std;
-
-        private ViewTransition<Layout> getCurrent() {
-            if (rotate.isPort()) {
-                return portCurrent;
-            }
-            return landCurrent;
-        }
-
-        private void layout(ViewTransition<Layout> transition) {
-            transition.runWithoutAnimation(true);
-        }
-
-        private void layoutAnimated(ViewTransition<Layout> transition) {
-            layoutAnimated(transition, DefaultAnimatorArgs);
-        }
-
-        private void layoutAnimated(ViewTransition<Layout> transition, ViewAnimatorArgs args) {
-            transition.createAnimatorSet(args).start();
-        }
-    }
 
     static class LayoutChangedReason extends EnumClass.Int {
         public static final LayoutChangedReason ROTATION_REQUESTED = new LayoutChangedReason("Rotation Requested");
@@ -486,30 +238,37 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else if (ControlSignal.LAYOUT_PORT_TOP_HALF.equals(signal)) {
                 if (rotate.isPort()) {
-                    if(focusView.focusPos == FocusPositions.FOCUS_MIDDLE){
-                        focusView.focus(FocusPositions.FOCUS_TOP);
+                    if (focusView.focusPos == FocusPositions.FOCUS_TOP) {
+                        layout.portCurrent = layout.port_topHalf;
+                        layout.layoutAnimated(layout.portCurrent);
                     }
-                    layout.portCurrent = layout.port_topHalf;
-                    layout.layoutAnimated(layout.port_topHalf);
+                    if (focusView.focusPos == FocusPositions.FOCUS_MIDDLE) {
+                        layout.portCurrent = layout.port_middleHalf;
+                        layout.layoutAnimated(layout.portCurrent);
+                    }
+
                 }
             } else if (ControlSignal.LAYOUT_PORT_TOP_FULL.equals(signal)) {
                 if (rotate.isPort()) {
-                    if(focusView.focusPos != FocusPositions.FOCUS_TOP){
-                        focusView.focus(FocusPositions.FOCUS_TOP);
+                    if (focusView.focusPos == FocusPositions.FOCUS_TOP) {
+                        layout.portCurrent = layout.port_topFull;
+                        layout.layoutAnimated(layout.portCurrent);
                     }
-                    layout.portCurrent = layout.port_topFull;
-                    layout.layoutAnimated(layout.port_topFull);
+                    if (focusView.focusPos == FocusPositions.FOCUS_MIDDLE) {
+                        layout.portCurrent = layout.port_middleFull;
+                        layout.layoutAnimated(layout.portCurrent);
+                    }
                 }
             } else if (ControlSignal.MEDIA_NEXT_SECTION.equals(signal)) {
-                if(focusView.focusPos == FocusPositions.FOCUS_TOP){
+                if (focusView.focusPos == FocusPositions.FOCUS_TOP) {
                     topMedia.toNextSection();
-                }else if(focusView.focusPos == FocusPositions.FOCUS_MIDDLE){
+                } else if (focusView.focusPos == FocusPositions.FOCUS_MIDDLE) {
                     middleMedia.toNextSection();
                 }
             } else if (ControlSignal.MEDIA_PREV_SECTION.equals(signal)) {
-                if(focusView.focusPos == FocusPositions.FOCUS_TOP){
+                if (focusView.focusPos == FocusPositions.FOCUS_TOP) {
                     topMedia.toPrevSection();
-                }else if(focusView.focusPos == FocusPositions.FOCUS_MIDDLE){
+                } else if (focusView.focusPos == FocusPositions.FOCUS_MIDDLE) {
                     middleMedia.toPrevSection();
                 }
             } else if (ControlSignal.FOCUS_NEXT.equals(signal)) {
@@ -686,24 +445,24 @@ public class MainActivity extends AppCompatActivity {
         private FocusPositions focusPos = FocusPositions.FOCUS_TOP;
 
         private void focusNext() {
-            if(rotate.isLand()) return;
-            if(rotate.isPort() && layout.portCurrent == layout.port_topFull) return;
+            if (rotate.isLand()) return;
+            if (rotate.isPort() && layout.portCurrent == layout.port_topFull) return;
             FocusPositions nextPos = (FocusPositions) FocusPositions.getMap().get(Math.min(Math.max(focusPos.identifier + 1, 0), 2));
-            if(rotate.isPort() && layout.portCurrent == layout.port_topHalf &&
+            if (rotate.isPort() && layout.portCurrent == layout.port_topHalf &&
                     nextPos == FocusPositions.FOCUS_MIDDLE
-            ){
+            ) {
                 nextPos = FocusPositions.FOCUS_BOTTOM;
             }
             focus(nextPos);
         }
 
         private void focusPrev() {
-            if(rotate.isLand()) return;
-            if(rotate.isPort() && layout.portCurrent == layout.port_topFull) return;
+            if (rotate.isLand()) return;
+            if (rotate.isPort() && layout.portCurrent == layout.port_topFull) return;
             FocusPositions nextPos = (FocusPositions) FocusPositions.getMap().get(Math.min(Math.max(focusPos.identifier - 1, 0), 2));
-            if(rotate.isPort() && layout.portCurrent == layout.port_topHalf &&
+            if (rotate.isPort() && layout.portCurrent == layout.port_topHalf &&
                     nextPos == FocusPositions.FOCUS_MIDDLE
-            ){
+            ) {
                 nextPos = FocusPositions.FOCUS_TOP;
             }
             focus(nextPos);
