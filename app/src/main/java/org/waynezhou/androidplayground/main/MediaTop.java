@@ -31,9 +31,12 @@ final class MediaTop {
         view = new MediaView(host);
         host.binding.mainTopContainer.addView(view);
         try {
-            view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video port.mp4")
+            view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video port fix.mp4")
                     .setOnPrepared(() -> {
+                        LogHelper.i("Prepared");
                         view.setOnceVideoSeekComplete(() -> {
+                            LogHelper.i("Seeked pos: %d", view.player.getCurrentPosition());
+                            
                             view.player.start();
                         });
                         view.setSection(sections[sectionIdx]);

@@ -48,6 +48,7 @@ final class Rotate {
             _toLand();
         }
     }
+    
     void to(int orientation) {
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             _toLand();

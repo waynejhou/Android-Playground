@@ -18,7 +18,10 @@ public final class LayoutTransitionPropertyBridges {
     public static final LayoutTransitionPropertyBridge bottom = new LayoutTransitionPropertyBridge.Bottom();
     public static final String PROP_GVT = "gravity";
     public static final LayoutTransitionPropertyBridge gravity = new LayoutTransitionPropertyBridge.Gravity();
-
+    public static final String PROP_SCX = "scaleX";
+    public static final LayoutTransitionPropertyBridge scaleX = new LayoutTransitionPropertyBridge.ScaleX();
+    public static final String PROP_SCY = "scaleY";
+    public static final LayoutTransitionPropertyBridge scaleY = new LayoutTransitionPropertyBridge.ScaleY();
     /**
     public static final String PROP_ROT = "rotation";
     public static final LayoutTransitionPropertyBridge rotation = new LayoutTransitionPropertyBridge.Rotation();
@@ -26,10 +29,7 @@ public final class LayoutTransitionPropertyBridges {
     public static final LayoutTransitionPropertyBridge pivotX = new LayoutTransitionPropertyBridge.PivotX();
     public static final String PROP_PTY = "pivotY";
     public static final LayoutTransitionPropertyBridge pivotY = new LayoutTransitionPropertyBridge.PivotY();
-    public static final String PROP_SCX = "scaleX";
-    public static final LayoutTransitionPropertyBridge scaleX = new LayoutTransitionPropertyBridge.ScaleX();
-    public static final String PROP_SCY = "scaleY";
-    public static final LayoutTransitionPropertyBridge scaleY = new LayoutTransitionPropertyBridge.ScaleY();
+
     public static final String PROP_ZZZ = "z";
     public static final LayoutTransitionPropertyBridge z = new LayoutTransitionPropertyBridge.Z();
     public static final String PROP_TRX = "translationX";
@@ -45,12 +45,13 @@ public final class LayoutTransitionPropertyBridges {
         put(PROP_TOP, top);
         put(PROP_BTM, bottom);
         put(PROP_GVT, gravity);
+        put(PROP_SCX, scaleX);
+        put(PROP_SCY, scaleY);
         /**
         put(PROP_ROT, rotation);
         put(PROP_PTX, pivotX);
         put(PROP_PTY, pivotY);
-        put(PROP_SCX, scaleX);
-        put(PROP_SCY, scaleY);
+
         put(PROP_ZZZ, z);
         put(PROP_TRX, translationX);
         put(PROP_TRY, translationY);
@@ -64,5 +65,7 @@ public final class LayoutTransitionPropertyBridges {
         put(PROP_TOP, PROP_LFT);
         put(PROP_BTM, PROP_RGT);
         put(PROP_GVT, PROP_GVT);
+        put(PROP_SCX, PROP_SCY);
+        put(PROP_SCY, PROP_SCX);
     }};
 }

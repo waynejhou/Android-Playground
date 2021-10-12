@@ -32,7 +32,7 @@ final class MediaMiddle {
         view = new MediaView(host);
         host.binding.mainMiddleContainer.addView(view);
         try {
-            view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video.mp4")
+            view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video fix.mp4")
                     .setOnPrepared(() -> {
                         view.setOnceVideoSeekComplete(() -> {
                             view.player.start();

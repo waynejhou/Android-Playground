@@ -7,15 +7,16 @@ import org.waynezhou.libUtil.LogHelper;
 
 final class Control {
     private Activity host;
-
+    
     void init(Activity activity) {
         this.host = activity;
     }
-
+    
     void sendSignal(ControlSignal signal) {
-        onGotSignal(signal);
+        host.runOnUiThread(() -> onGotSignal(signal));
+        
     }
-
+    
     private void onGotSignal(ControlSignal signal) {
         LogHelper.i(signal);
         if (CTRL_ROTATE.equals(signal)) {
@@ -25,33 +26,19 @@ final class Control {
         } else if (CTRL_ROTATE_PORT.equals(signal)) {
             host.rotate.toPort();
         } else if (CTRL_LAYOUT_PORT_STD.equals(signal)) {
-            if (host.rotate.isPort()) {
-                host.layout.setPortCurrent(host.layout.port_std);
-                host.layout.layoutAnimated(host.layout.getPortCurrent());
-            }
-        } else if (CTRL_LAYOUT_PORT_TOP_HALF.equals(signal)) {
-            if (host.rotate.isPort()) {
-                if (host.focusView.getFocusPos() == FOCUS_TOP) {
-                    host.layout.setPortCurrent(host.layout.port_topHalf);
-                    host.layout.layoutAnimated(host.layout.getPortCurrent());
-                }
-                if (host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
-                    host.layout.setPortCurrent(host.layout.port_middleHalf);
-                    host.layout.layoutAnimated(host.layout.getPortCurrent());
-                }
-
-            }
+            onGotLayoutPortStd();
+        } else if (CTRL_LAYOUT_PORT_HALF.equals(signal)) {
+            onGotLayoutPortHalf();
+        } else if (CTRL_LAYOUT_PORT_FULL.equals(signal)) {
+            onGotLayoutPortFull();
         } else if (CTRL_LAYOUT_PORT_TOP_FULL.equals(signal)) {
-            if (host.rotate.isPort()) {
-                if (host.focusView.getFocusPos() == FOCUS_TOP) {
-                    host.layout.setPortCurrent(host.layout.port_topFull);
-                    host.layout.layoutAnimated(host.layout.getPortCurrent());
-                }
-                if (host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
-                    host.layout.setPortCurrent(host.layout.port_middleFull);
-                    host.layout.layoutAnimated(host.layout.getPortCurrent());
-                }
-            }
+            onGotLayoutPortTopFull();
+        } else if (CTRL_LAYOUT_PORT_TOP_HALF.equals(signal)) {
+            onGotLayoutPortTopHalf();
+        } else if (CTRL_LAYOUT_PORT_MIDDLE_FULL.equals(signal)) {
+            onGotLayoutPortMiddleFull();
+        } else if (CTRL_LAYOUT_PORT_MIDDLE_HALF.equals(signal)) {
+            onGotLayoutPortMiddleHalf();
         } else if (CTRL_MEDIA_NEXT_SECTION.equals(signal)) {
             if (host.focusView.getFocusPos() == FOCUS_TOP) {
                 host.mediaTop.toNextSection();
@@ -68,13 +55,65 @@ final class Control {
             host.focusView.focusNext();
         } else if (CTRL_FOCUS_PREV.equals(signal)) {
             host.focusView.focusPrev();
-        }else if (CTRL_FOCUS_TOP.equals(signal)) {
+        } else if (CTRL_FOCUS_TOP.equals(signal)) {
             host.focusView.focus(FOCUS_TOP);
         } else if (CTRL_FOCUS_MIDDLE.equals(signal)) {
             host.focusView.focus(FOCUS_MIDDLE);
-        }
-        else if (CTRL_FOCUS_BOTTOM.equals(signal)) {
+        } else if (CTRL_FOCUS_BOTTOM.equals(signal)) {
             host.focusView.focus(FOCUS_BOTTOM);
+        }
+    }
+    
+    private void onGotLayoutPortStd() {
+        if (host.rotate.isPort()) {
+            host.layout.setPortCurrent(host.layout.port_std);
+            host.layout.layoutAnimated(host.layout.getPortCurrent());
+        }
+    }
+    
+    private void onGotLayoutPortFull() {
+        if (host.focusView.getFocusPos() == FOCUS_TOP) {
+            onGotLayoutPortTopFull();
+        }
+        if (host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
+            onGotLayoutPortMiddleFull();
+        }
+    }
+    
+    private void onGotLayoutPortHalf() {
+        if (host.focusView.getFocusPos() == FOCUS_TOP) {
+            onGotLayoutPortTopHalf();
+        }
+        if (host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
+            onGotLayoutPortMiddleHalf();
+        }
+    }
+    
+    private void onGotLayoutPortTopFull() {
+        if (host.rotate.isPort()) {
+            host.layout.setPortCurrent(host.layout.port_topFull);
+            host.layout.layoutAnimated(host.layout.getPortCurrent());
+        }
+    }
+    
+    private void onGotLayoutPortTopHalf() {
+        if (host.rotate.isPort()) {
+            host.layout.setPortCurrent(host.layout.port_topHalf);
+            host.layout.layoutAnimated(host.layout.getPortCurrent());
+        }
+    }
+    
+    private void onGotLayoutPortMiddleFull() {
+        if (host.rotate.isPort()) {
+            host.layout.setPortCurrent(host.layout.port_middleFull);
+            host.layout.layoutAnimated(host.layout.getPortCurrent());
+        }
+    }
+    
+    private void onGotLayoutPortMiddleHalf() {
+        if (host.rotate.isPort()) {
+            host.layout.setPortCurrent(host.layout.port_middleHalf);
+            host.layout.layoutAnimated(host.layout.getPortCurrent());
         }
     }
 }

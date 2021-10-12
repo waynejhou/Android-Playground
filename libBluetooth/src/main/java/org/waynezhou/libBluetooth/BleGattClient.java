@@ -49,8 +49,8 @@ public class BleGattClient {
     }
 
     public BleGattClientHandle startOn(BluetoothDevice device, Context context,
-                                       boolean autoConnect) {
-        BluetoothGatt gatt = device.connectGatt(context, autoConnect, callback, BluetoothDevice.TRANSPORT_LE);
+                                       boolean autoConnect, int transport) {
+        BluetoothGatt gatt = device.connectGatt(context, autoConnect, callback, transport);
         LogHelper.i(gatt);
         return new BleGattClientHandle(gatt);
     }

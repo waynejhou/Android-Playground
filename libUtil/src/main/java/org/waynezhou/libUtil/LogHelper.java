@@ -97,7 +97,11 @@ public final class LogHelper {
     public static void e(@Nullable Object msg) {
         log(Log::e, msg);
     }
-
+    
+    public static void e(String format, Object... args){
+        log(Log::e, String.format(Locale.TRADITIONAL_CHINESE, format, args));
+    }
+    
     public static void e(@Nullable Object msg, @NonNull Throwable tr) {
         log(Log::e, msg, tr);
     }

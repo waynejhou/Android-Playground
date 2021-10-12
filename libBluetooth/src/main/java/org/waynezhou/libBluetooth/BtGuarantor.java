@@ -9,55 +9,55 @@ import org.waynezhou.libUtil.eventGroup.PermissionCheckerEventGroup;
 import org.waynezhou.libUtil.event.EventGroup;
 
 public class BtGuarantor /*extends EventAction<BluetoothGuarantor, BluetoothGuarantorEventGroup>*/ {
-
+    
     private final _BtGuarantorEventGroup eventGroup = new _BtGuarantorEventGroup();
-
+    
     private static class _BtGuarantorEventGroup extends BtGuarantorEventGroup {
         public EventGroup<BtGuarantorEventGroup>.Invoker getInvoker() {
             return super.getInvoker();
         }
     }
-
+    
     public BtGuarantorEventGroup getEventGroup() {
         return eventGroup;
     }
-
+    
     private final PermissionChecker checker;
     private final BtEnabler enabler;
-
+    
     public BtGuarantor(AppCompatActivity activity) {
         //super(new BluetoothGuarantorEventGroup());
         this.enabler = new BtEnabler(activity);
         this.checker = new PermissionChecker(activity, true,
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_ADMIN,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
+          Manifest.permission.BLUETOOTH,
+          Manifest.permission.BLUETOOTH_ADMIN,
+          Manifest.permission.ACCESS_COARSE_LOCATION,
+          Manifest.permission.ACCESS_FINE_LOCATION
         );
     }
-
+    
     //@Override
     public void fire() {
         checker.getEventGroup()
-                .once(g -> g.permissionDenied, $ -> {
+          .once(g -> g.permissionDenied, $ -> {
+              eventGroup.getInvoker().invoke(
+                g -> g.notGuaranteed,
+                BtNotGuaranteedReason.GrantedNoPermission);
+          })
+          .once(g -> g.permissionGranted, $ -> {
+              enabler.getEventGroup()
+                .once(BtEnablerEventGroup::getAgree, $$ -> {
                     eventGroup.getInvoker().invoke(
-                            BtGuarantorEventGroup::getNotGuaranteed,
-                            BtNotGuaranteedReason.GrantedNoPermission);
+                      g -> g.guaranteed,
+                      null);
                 })
-                .once(g -> g.permissionGranted, $ -> {
-                    enabler.getEventGroup()
-                            .once(BtEnablerEventGroup::getAgree, $$ -> {
-                                eventGroup.getInvoker().invoke(
-                                        BtGuarantorEventGroup::getGuaranteed,
-                                        null);
-                            })
-                            .once(BtEnablerEventGroup::getDisagree, $$ -> {
-                                eventGroup.getInvoker().invoke(
-                                        BtGuarantorEventGroup::getNotGuaranteed,
-                                        BtNotGuaranteedReason.BluetoothNotEnabled);
-                            });
-                    enabler.fire();
+                .once(BtEnablerEventGroup::getDisagree, $$ -> {
+                    eventGroup.getInvoker().invoke(
+                      g -> g.notGuaranteed,
+                      BtNotGuaranteedReason.BluetoothNotEnabled);
                 });
+              enabler.fire();
+          });
         checker.fire();
 
         /*

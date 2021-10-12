@@ -56,6 +56,12 @@ final class FocusView {
     void focus(FocusPosition fPos) {
         if (focusPos==fPos) return;
         focusPos = fPos;
+        if(focusPos == FocusPosition.FOCUS_TOP){
+            host.layout.setLandCurrent(host.layout.land_top);
+        }
+        if(focusPos == FocusPosition.FOCUS_MIDDLE){
+            host.layout.setLandCurrent(host.layout.land_middle);
+        }
         host.layout.layoutAnimated(host.layout.getCurrent());
     }
 }
