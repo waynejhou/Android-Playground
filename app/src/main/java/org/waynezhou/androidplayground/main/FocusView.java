@@ -2,9 +2,12 @@ package org.waynezhou.androidplayground.main;
 
 final class FocusView {
     private Activity host;
-
+    private Rotate rotate;
+    private Layout layout;
     void init(Activity activity) {
         this.host = activity;
+        rotate = host.rotate;
+        layout = host.layout;
     }
 
     private FocusPosition focusPos = FocusPosition.FOCUS_TOP;
@@ -14,18 +17,18 @@ final class FocusView {
     }
 
     void focusNext() {
-        if (host.rotate.isLand()) return;
-        if (host.rotate.isPort() &&
-                (host.layout.getPortCurrent() == host.layout.port_topFull
-                        ||host.layout.getPortCurrent() == host.layout.port_middleFull))
+        if (rotate.isLand()) return;
+        if (rotate.isPort() &&
+                (layout.getPortCurrent() == layout.port_topFull
+                        ||layout.getPortCurrent() == layout.port_middleFull))
             return;
         FocusPosition nextPos = (FocusPosition) FocusPosition.getMap().get(Math.min(Math.max(focusPos.identifier + 1, 0), 2));
-        if (host.rotate.isPort() && host.layout.getPortCurrent() == host.layout.port_topHalf &&
+        if (rotate.isPort() && layout.getPortCurrent() == layout.port_topHalf &&
                 nextPos == FocusPosition.FOCUS_MIDDLE
         ) {
             nextPos = FocusPosition.FOCUS_BOTTOM;
         }
-        if (host.rotate.isPort() && host.layout.getPortCurrent() == host.layout.port_middleHalf &&
+        if (rotate.isPort() && layout.getPortCurrent() == layout.port_middleHalf &&
                 nextPos == FocusPosition.FOCUS_TOP
         ) {
             nextPos = FocusPosition.FOCUS_MIDDLE;
@@ -34,18 +37,18 @@ final class FocusView {
     }
 
     void focusPrev() {
-        if (host.rotate.isLand()) return;
-        if (host.rotate.isPort() &&
-                (host.layout.getPortCurrent() == host.layout.port_topFull
-                ||host.layout.getPortCurrent() == host.layout.port_middleFull))
+        if (rotate.isLand()) return;
+        if (rotate.isPort() &&
+                (layout.getPortCurrent() == layout.port_topFull
+                ||layout.getPortCurrent() == layout.port_middleFull))
             return;
         FocusPosition nextPos = (FocusPosition) FocusPosition.getMap().get(Math.min(Math.max(focusPos.identifier - 1, 0), 2));
-        if (host.rotate.isPort() && host.layout.getPortCurrent() == host.layout.port_topHalf &&
+        if (rotate.isPort() && layout.getPortCurrent() == layout.port_topHalf &&
                 nextPos == FocusPosition.FOCUS_MIDDLE
         ) {
             nextPos = FocusPosition.FOCUS_TOP;
         }
-        if (host.rotate.isPort() && host.layout.getPortCurrent() == host.layout.port_middleHalf &&
+        if (rotate.isPort() && layout.getPortCurrent() == layout.port_middleHalf &&
                 nextPos == FocusPosition.FOCUS_TOP
         ) {
             nextPos = FocusPosition.FOCUS_MIDDLE;
@@ -57,11 +60,11 @@ final class FocusView {
         if (focusPos==fPos) return;
         focusPos = fPos;
         if(focusPos == FocusPosition.FOCUS_TOP){
-            host.layout.setLandCurrent(host.layout.land_top);
+            layout.setLandCurrent(layout.land_top);
         }
         if(focusPos == FocusPosition.FOCUS_MIDDLE){
-            host.layout.setLandCurrent(host.layout.land_middle);
+            layout.setLandCurrent(layout.land_middle);
         }
-        host.layout.layoutAnimated(host.layout.getCurrent());
+        layout.layoutAnimated(layout.getCurrent());
     }
 }

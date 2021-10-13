@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidPlayground">
         <service
-            android:name=".service.SingleBleDeviceService"
+            android:name=".service.BleControllerService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="connectedDevice|location"

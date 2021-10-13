@@ -1,8 +1,6 @@
 package org.waynezhou.libUtil;
 
-import android.Manifest;
 import android.content.pm.PackageManager;
-import android.util.Log;
 
 import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResultLauncher;

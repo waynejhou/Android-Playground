@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.waynezhou.libUtil.ActivityResultRegister;
-import org.waynezhou.libUtil.eventGroup.ActivityResultRegisterEventGroup;
 import org.waynezhou.libUtil.event.EventGroup;
 
 public final class BtEnabler {

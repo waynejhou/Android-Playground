@@ -1,19 +1,33 @@
 package org.waynezhou.androidplayground.main;
 
+import android.Manifest;
+import android.os.Bundle;
 import android.os.Environment;
 
 import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.PermissionChecker;
 import org.waynezhou.libView.MediaView;
 
 import java.io.IOException;
 
 final class MediaTop {
     private Activity host;
+    private Layout layout;
 
     void init(Activity activity) {
         this.host = activity;
+        this.host.getEventGroup().on(g->g.create, this::onHostCreate);
+        this.layout = host.layout;
     }
-
+    
+    private void onHostCreate(Bundle bundle) {
+        PermissionChecker fileReadPermissionChecker = new PermissionChecker(host, true, Manifest.permission.READ_EXTERNAL_STORAGE);
+        fileReadPermissionChecker.getEventGroup().on(g -> g.permissionGranted, e -> {
+            this.create();
+        });
+        fileReadPermissionChecker.fire();
+    }
+    
     private final MediaView.Section[] sections = new MediaView.Section[]{
             new MediaView.Section(30, 0, 1000, true),
             new MediaView.Section(30, 1000, 2000, true),
@@ -29,14 +43,11 @@ final class MediaTop {
 
      void create() {
         view = new MediaView(host);
-        host.binding.mainTopContainer.addView(view);
+        layout.binding.mainTopContainer.addView(view);
         try {
             view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video port fix.mp4")
                     .setOnPrepared(() -> {
-                        LogHelper.i("Prepared");
                         view.setOnceVideoSeekComplete(() -> {
-                            LogHelper.i("Seeked pos: %d", view.player.getCurrentPosition());
-                            
                             view.player.start();
                         });
                         view.setSection(sections[sectionIdx]);

@@ -8,12 +8,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
-import androidx.activity.ComponentActivity;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
-
 import org.waynezhou.libUtil.event.EventGroup;
 import org.waynezhou.libUtil.eventArgs.ServiceBinderConnectedEventArgs;
+import org.waynezhou.libUtil.eventGroup.SensorToggleEventGroup;
 import org.waynezhou.libUtil.eventGroup.ServiceBinderEventGroup;
 
 public class ServiceBinder<TService extends Service, TServiceLocalBinder extends IBinder> /* extends EventAction<ServiceBinder<TService, TServiceLocalBinder>, ServiceBinderEventGroup<TServiceLocalBinder>> */{

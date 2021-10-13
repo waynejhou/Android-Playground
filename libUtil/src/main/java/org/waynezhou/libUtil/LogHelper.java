@@ -8,28 +8,29 @@ import androidx.annotation.Nullable;
 import org.waynezhou.libUtil.reflection.Reflection;
 import org.waynezhou.libUtil.reflection.ReflectionException;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 public final class LogHelper {
     private LogHelper() {
     }
-
-    @NonNull
-    private static String packageName = "org.waynezhou.libUtil";
-    @NonNull
+    
+    /*@NonNull
     private static String tag = "Log";
 
     static {
         try {
-            packageName = Reflection
-                    .getCurrentApplication()
-                    .getApplicationInfo().packageName;
+            String packageName = Reflection
+              .getCurrentApplication()
+              .getApplicationInfo().packageName;
             String[] s = packageName.split("\\.");
             tag = s[s.length - 1] + tag;
         } catch (ReflectionException e) {
             Log.e(tag, "exception", e);
         }
-    }
+    }*/
 
     @FunctionalInterface
     private interface LogMethod {
@@ -41,29 +42,25 @@ public final class LogHelper {
         void log(String tag, String msg, Throwable tr);
     }
 
-
+    
     private static void log(LogMethod method, Object msg) {
         StackTraceElement callerInfo = Thread.currentThread().getStackTrace()[4];
         String objMsg = "null";
         if (msg != null) objMsg = msg.toString();
-        objMsg = callerInfo.getClassName().replaceFirst(packageName, "")
-                + "::"
-                + callerInfo.getMethodName() + "(" + callerInfo.getFileName() + ":" + callerInfo.getLineNumber() + ")"
+        objMsg = callerInfo.getMethodName() + "(" + callerInfo.getFileName() + ":" + callerInfo.getLineNumber() + ")"
                 + (objMsg.isEmpty()? "" : " - ")
                 + objMsg;
-        method.log(tag, objMsg);
+        method.log("LogHelper", objMsg);
     }
 
     private static void log(LogThrowableMethod method, Object msg, Throwable tr) {
         StackTraceElement callerInfo = Thread.currentThread().getStackTrace()[4];
         String objMsg = "null";
         if (msg != null) objMsg = msg.toString();
-        objMsg = callerInfo.getClassName().replaceFirst(packageName, "")
-                + "::"
-                + callerInfo.getMethodName() + "(" + callerInfo.getFileName() + ":" + callerInfo.getLineNumber() + ")"
-                + "\n"
+        objMsg = callerInfo.getMethodName() + "(" + callerInfo.getFileName() + ":" + callerInfo.getLineNumber() + ")"
+                + (objMsg.isEmpty()? "" : " - ")
                 + objMsg;
-        method.log(tag, objMsg, tr);
+        method.log("LogHelper", objMsg, tr);
     }
 
     public static void ie(Condition isError, String format, Object... args){
@@ -135,7 +132,9 @@ public final class LogHelper {
     public static void w(@Nullable Object msg) {
         log(Log::w, msg);
     }
-
+    public static void w(String format, Object... args){
+        log(Log::w, String.format(Locale.TRADITIONAL_CHINESE, format, args));
+    }
     @Deprecated
     public static void w(@Nullable Object msg, @NonNull Throwable tr) {
         log(Log::w, msg, tr);

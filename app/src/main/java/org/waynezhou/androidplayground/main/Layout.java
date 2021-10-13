@@ -5,10 +5,15 @@ import static org.waynezhou.libView.view_transition.LayoutTransitionPropertyBrid
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
+import android.os.Bundle;
+import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 
+import org.waynezhou.androidplayground.databinding.ActivityMainBinding;
 import org.waynezhou.libUtil.DelegateUtils;
 import org.waynezhou.libUtil.LogHelper;
 import org.waynezhou.libUtil.StandardKt;
@@ -19,9 +24,29 @@ import org.waynezhou.libView.view_transition.ViewTransition;
 @SuppressWarnings({"DanglingJavadoc", "unused", "FieldCanBeLocal"})
 final class Layout {
     private Activity host;
-    
+    private Layout layout;
+    private Rotate rotate;
+    private FocusView focusView;
     void init(Activity activity) {
         this.host = activity;
+        this.layout = host.layout;
+        this.focusView = host.focusView;
+        this.rotate = host.rotate;
+        host.getEventGroup().on(g->g.create, this::onHostCreate);
+        host.getEventGroup().on(g->g.resume, $->hideSystemUI());
+    }
+    
+    ActivityMainBinding binding;
+    private void onHostCreate(Bundle bundle) {
+        final WindowManager.LayoutParams lp = host.getWindow().getAttributes();
+        lp.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT;
+        binding = ActivityMainBinding.inflate(host.getLayoutInflater());
+        binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(this::onGlobalLayoutChanged);
+        binding.getRoot().getViewTreeObserver().addOnPreDrawListener(this::onPreDraw);
+        binding.getRoot().getViewTreeObserver().addOnDrawListener(this::onRootDraw);
+        setChangedReason(CONTENT_VIEW_SET);
+        setContentViewSet(false);
+        host.setContentView(binding.getRoot());
     }
     
     void onRootDraw() {
@@ -75,10 +100,10 @@ final class Layout {
     
     private void onContentViewSet() {
         refreshLayoutProperties();
-        if (host.rotate.isLand()) {
+        if (rotate.isLand()) {
             layout(landCurrent);
             
-        } else if (host.rotate.isPort()) {
+        } else if (rotate.isPort()) {
             layout(portCurrent);
         }
     }
@@ -103,8 +128,8 @@ final class Layout {
     private Integer port_bottomContainer_height = null;
     
     private void refreshLayoutProperties() {
-        final int width = host.binding.getRoot().getWidth();
-        final int height = host.binding.getRoot().getHeight();
+        final int width = binding.getRoot().getWidth();
+        final int height = binding.getRoot().getHeight();
         LogHelper.d("globalLayoutChanged root: [Width: %d, Height: %d]", width, height);
         rootWidth = width;
         rootHeight = height;
@@ -193,152 +218,151 @@ final class Layout {
       .let(PROP_TOP).startFromCurrent().toStep(h -> 0).end();
     
     final ViewTransition<Layout> land_top = StandardKt.apply(new ViewTransition.Builder<>(this), it -> {
-        it.$_startAddStep(() -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> binding.mainTopContainer)
           .pre(v -> v.setZ(1f)).preBuild(landFull)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> binding.mainMiddleContainer)
           .pre(v -> v.setZ(0.5f)).preBuild(middleContainerHideTranspose)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainBottomContainer)
+        it.$_startAddStep(() -> binding.mainBottomContainer)
           .pre(v -> v.setZ(0f)).preBuild(bottomContainerHideTranspose)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(landFull)
           .$_endAddStep();
     })
       .build();
     
     final ViewTransition<Layout> land_middle = StandardKt.apply(new ViewTransition.Builder<>(this), it -> {
-        it.$_startAddStep(() -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> binding.mainTopContainer)
           .pre(v -> v.setZ(1f)).preBuild(topContainerHideTranspose)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> binding.mainMiddleContainer)
           .pre(v -> v.setZ(0.5f)).preBuild(landFull)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainBottomContainer)
+        it.$_startAddStep(() -> binding.mainBottomContainer)
           .pre(v -> v.setZ(0f)).preBuild(bottomContainerHideTranspose)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(landFull)
           .$_endAddStep();
     })
       .build();
     
     final ViewTransition<Layout> port_std = StandardKt.apply(new ViewTransition.Builder<>(this), it -> {
-        it.$_startAddStep(() -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> binding.mainTopContainer)
           .pre(v -> v.setZ(1f)).preBuild(topContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 0.90f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 0.90f).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() != FocusPosition.FOCUS_TOP, () -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> focusView.getFocusPos() != FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> binding.mainMiddleContainer)
           .pre(v -> v.setZ(0.5f)).preBuild(middleContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 0.90f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 0.90f).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() != FocusPosition.FOCUS_MIDDLE, () -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> focusView.getFocusPos() != FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
         
         
-        it.$_startAddStep(() -> host.binding.mainBottomContainer)
+        it.$_startAddStep(() -> binding.mainBottomContainer)
           .pre(v -> v.setZ(0f)).preBuild(bottomContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(topContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(middleContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(bottomContainer)
           .$_endAddStep();
-        ;
     })
       .build();
     
     final ViewTransition<Layout> port_topFull = StandardKt.apply(new ViewTransition.Builder<>(this), it -> {
-        it.$_startAddStep(() -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> binding.mainTopContainer)
           .pre(v -> v.setZ(1f)).preBuild(portFull)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> binding.mainMiddleContainer)
           .pre(v -> v.setZ(0.5f)).preBuild(middleContainerHide)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainBottomContainer)
+        it.$_startAddStep(() -> binding.mainBottomContainer)
           .pre(v -> v.setZ(0f)).preBuild(bottomContainerHide)
           .$_endAddStep();
         
         /* mainFocusView */
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(portFull)
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(middleContainerHide)
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(bottomContainerHide)
           .$_endAddStep();
     })
       .build();
     
     final ViewTransition<Layout> port_topHalf = StandardKt.apply(new ViewTransition.Builder<>(this), it -> {
-        it.$_startAddStep(() -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> binding.mainTopContainer)
           .pre(v -> v.setZ(1f)).preBuild(portTopHalf)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 0.90f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 0.90f).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() != FocusPosition.FOCUS_TOP, () -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> focusView.getFocusPos() != FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> binding.mainMiddleContainer)
           .pre(v -> v.setZ(0.5f)).preBuild(middleContainerHide)
           .let(PROP_TOP).startFromCurrent().toStep(h -> h.longSideLength).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> host.binding.mainBottomContainer)
+        it.$_startAddStep(() -> binding.mainBottomContainer)
           .pre(v -> v.setZ(0f)).preBuild(bottomContainer)
           .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
           .$_endAddStep();
         /* mainFocusView */
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(portTopHalf)
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(middleContainerHide)
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1f)).preBuild(bottomContainer)
           .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
           .$_endAddStep();
@@ -346,64 +370,64 @@ final class Layout {
       .build();
     
     final ViewTransition<Layout> port_middleFull = StandardKt.apply(new ViewTransition.Builder<>(this), it -> {
-        it.$_startAddStep(() -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> binding.mainTopContainer)
           .pre(v -> v.setZ(1f))
           .preBuild(topContainerHide)
           .$_endAddStep();
-        it.$_startAddStep(() -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> binding.mainMiddleContainer)
           .pre(v -> v.setZ(0.5f))
           .preBuild(portFull)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> host.binding.mainBottomContainer)
+        it.$_startAddStep(() -> binding.mainBottomContainer)
           .pre(v -> v.setZ(0f))
           .preBuild(bottomContainerHide)
           .$_endAddStep();
         /* mainFocusView */
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(topContainerHide)
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(portFull)
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(bottomContainerHide)
           .$_endAddStep();
     })
       .build();
     
     final ViewTransition<Layout> port_middleHalf = StandardKt.apply(new ViewTransition.Builder<>(this), it -> {
-        it.$_startAddStep(() -> host.binding.mainTopContainer)
+        it.$_startAddStep(() -> binding.mainTopContainer)
           .pre(v -> v.setZ(1f))
           .preBuild(topContainerHide)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> binding.mainMiddleContainer)
           .pre(v -> v.setZ(0.5f)).preBuild(portTopHalf)
           .$_endAddStep();
     
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 0.90f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 0.90f).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() != FocusPosition.FOCUS_MIDDLE, () -> host.binding.mainMiddleContainer)
+        it.$_startAddStep(() -> focusView.getFocusPos() != FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
         
-        it.$_startAddStep(() -> host.binding.mainBottomContainer)
+        it.$_startAddStep(() -> binding.mainBottomContainer)
           .pre(v -> v.setZ(0f)).preBuild(bottomContainer)
           .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
           .$_endAddStep();
         /* mainFocusView */
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(topContainerHide)
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(portTopHalf)
           .$_endAddStep();
-        it.$_startAddStep(() -> host.focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> host.binding.mainFocusView)
+        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1f)).preBuild(bottomContainer)
           .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
           .$_endAddStep();
@@ -431,7 +455,7 @@ final class Layout {
     }
     
     ViewTransition<Layout> getCurrent() {
-        if (host.rotate.isPort()) {
+        if (rotate.isPort()) {
             return portCurrent;
         }
         return landCurrent;
@@ -531,4 +555,19 @@ final class Layout {
     boolean isLayoutPortStd(ViewTransition<Layout> layout) {
         return layout == port_std;
     }
+    private void hideSystemUI() {
+        View decorView = host.getWindow().getDecorView();
+        int uiOptions = //View.SYSTEM_UI_FLAG_LOW_PROFILE
+          View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        decorView.setSystemUiVisibility(uiOptions);
+        ActionBar actionBar = host.getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
+    }
+    
 }

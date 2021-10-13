@@ -5,7 +5,6 @@ import android.Manifest;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.waynezhou.libUtil.PermissionChecker;
-import org.waynezhou.libUtil.eventGroup.PermissionCheckerEventGroup;
 import org.waynezhou.libUtil.event.EventGroup;
 
 public class BtGuarantor /*extends EventAction<BluetoothGuarantor, BluetoothGuarantorEventGroup>*/ {

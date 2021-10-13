@@ -84,12 +84,12 @@ public class MediaView extends FrameLayout implements TextureView.SurfaceTexture
     }
     
     private boolean onPlayerInfo(MediaPlayer mp, int what, int extra) {
-        LogHelper.i("%s, Extra: %d", explainMediaPlayerInfoWhat(what), extra);
+        //LogHelper.i("%s, Extra: %d", explainMediaPlayerInfoWhat(what), extra);
         return false;
     }
     
     private boolean onPlayerError(MediaPlayer mp, int what, int extra) {
-        LogHelper.e("%s, %s", explainMediaPlayerErrorWhat(what), explainMediaPlayerExtraWhat(extra));
+        //LogHelper.e("%s, %s", explainMediaPlayerErrorWhat(what), explainMediaPlayerExtraWhat(extra));
         return false;
     }
     
@@ -163,7 +163,7 @@ public class MediaView extends FrameLayout implements TextureView.SurfaceTexture
     private volatile int lastHei = 0;
     
     private void setTextureSize() {
-        LogHelper.i();
+        //LogHelper.i();
         if (!isPlayerPrepared) return;
         if (lastWid == getWidth() && lastHei == getHeight()) return;
         lastWid = getWidth();

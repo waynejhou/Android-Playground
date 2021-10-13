@@ -26,7 +26,7 @@ public abstract class EventGroup <TEventGroup extends EventGroup<TEventGroup>>  
     }
 
     private EventGroup<TEventGroup>.Invoker invoker;
-    protected EventGroup<TEventGroup>.Invoker getInvoker(){
+    protected Invoker getInvoker(){
         if(invoker==null) invoker = new Invoker((TEventGroup)this);
         return invoker;
     }
