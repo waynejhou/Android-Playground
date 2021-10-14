@@ -4,35 +4,33 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import java.io.IOException;
-import java.lang.Integer;
-import java.lang.Object;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.metadata.MetadataExtractor;
 import org.tensorflow.lite.support.model.Model;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
-public final class ObjectDetectionFloat16YoloV4 {
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+public final class ObjectDetectionFloat32YoloV4 {
     @NonNull
     private final Model model;
     
-    private ObjectDetectionFloat16YoloV4(@NonNull Context context, @NonNull Model.Options options)
+    private ObjectDetectionFloat32YoloV4(@NonNull Context context, @NonNull Model.Options options)
       throws IOException {
-        model = Model.createModel(context, "object_detection_float16_Yolov4.tflite", options);
+        model = Model.createModel(context, "object_detection_float32_Yolov4.tflite", options);
         MetadataExtractor extractor = new MetadataExtractor(model.getData());
     }
     
     @NonNull
-    public static ObjectDetectionFloat16YoloV4 newInstance(@NonNull Context context) throws IOException {
-        return new ObjectDetectionFloat16YoloV4(context, (new Model.Options.Builder()).build());
+    public static ObjectDetectionFloat32YoloV4 newInstance(@NonNull Context context) throws IOException {
+        return new ObjectDetectionFloat32YoloV4(context, (new Model.Options.Builder()).build());
     }
     
     @NonNull
-    public static ObjectDetectionFloat16YoloV4 newInstance(@NonNull Context context,@NonNull Model.Options options) throws IOException {
-        return new ObjectDetectionFloat16YoloV4(context, options);
+    public static ObjectDetectionFloat32YoloV4 newInstance(@NonNull Context context, @NonNull Model.Options options) throws IOException {
+        return new ObjectDetectionFloat32YoloV4(context, options);
     }
     
     @NonNull

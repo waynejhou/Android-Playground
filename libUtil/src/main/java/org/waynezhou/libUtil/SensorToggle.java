@@ -61,10 +61,10 @@ public class SensorToggle {
         this.invoker = eventGroup.getInvoker();
         this.samplingPeriodUs = samplingPeriodUs;
     }
-    public void On (){
+    public void on(){
         manager.registerListener(callback, sensor, samplingPeriodUs);
     }
-    public void Off (){
+    public void off(){
         manager.unregisterListener(callback);
     }
 }

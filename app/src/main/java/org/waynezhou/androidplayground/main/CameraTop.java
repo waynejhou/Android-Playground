@@ -21,12 +21,13 @@ public class CameraTop {
     private Layout layout;
     private Rotate rotate;
     private Display windowDisplay;
-    public void init(Activity activity){
+    
+    public void init(Activity activity) {
         this.host = activity;
         this.layout = host.layout;
         this.rotate = host.rotate;
-        host.getEventGroup().on(g->g.create, this::onHostCreate);
-    
+        host.getEventGroup().on(g -> g.create, this::onHostCreate);
+        
         WindowManager windowManager = (WindowManager) host.getSystemService(WINDOW_SERVICE);
         windowDisplay = windowManager.getDefaultDisplay();
     }
@@ -41,16 +42,16 @@ public class CameraTop {
     }
     
     private void setCameraViewRotation() {
-        if(rotate.isLand()){
-            if(windowDisplay.getRotation() == Surface.ROTATION_90){
+        if (rotate.isLand()) {
+            if (windowDisplay.getRotation() == Surface.ROTATION_90) {
                 cameraView.setCameraOrientation(0);
-            }else{/*Surface.ROTATION_270*/
+            } else {/*Surface.ROTATION_270*/
                 cameraView.setCameraOrientation(180);
             }
-        }else{
-            if(windowDisplay.getRotation() == Surface.ROTATION_0){
+        } else {
+            if (windowDisplay.getRotation() == Surface.ROTATION_0) {
                 cameraView.setCameraOrientation(90);
-            }else{/*Surface.ROTATION_180*/
+            } else {/*Surface.ROTATION_180*/
                 cameraView.setCameraOrientation(270);
             }
         }
@@ -58,18 +59,19 @@ public class CameraTop {
     
     
     private CameraView cameraView;
-    public void create(){
-        StandardKt.apply(new PermissionChecker(host, true, Manifest.permission.CAMERA), it->{
+    
+    public void create() {
+        StandardKt.apply(new PermissionChecker(host, true, Manifest.permission.CAMERA), it -> {
             it.getEventGroup()
-              .on(g->g.permissionGranted, e->{
+              .on(g -> g.permissionGranted, e -> {
                   cameraView = new CameraView(host, Camera.open(0));
                   setCameraViewRotation();
                   layout.binding.mainTopContainer.addView(cameraView);
                   cameraView.startPreview();
               })
-            .on(g->g.permissionDenied, e->{
-                LogHelper.i("Camera Permission Denied");
-            })
+              .on(g -> g.permissionDenied, e -> {
+                  LogHelper.i("Camera Permission Denied");
+              })
             ;
         }).fire();
     }

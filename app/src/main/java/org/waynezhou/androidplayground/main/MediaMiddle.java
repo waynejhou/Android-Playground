@@ -1,5 +1,10 @@
 package org.waynezhou.androidplayground.main;
 
+import static org.waynezhou.androidplayground.main.ControlSignal.CTRL_MEDIA_NEXT_SECTION;
+import static org.waynezhou.androidplayground.main.ControlSignal.CTRL_MEDIA_PREV_SECTION;
+import static org.waynezhou.androidplayground.main.FocusPosition.FOCUS_MIDDLE;
+import static org.waynezhou.androidplayground.main.FocusPosition.FOCUS_TOP;
+
 import android.Manifest;
 import android.os.Bundle;
 import android.os.Environment;
@@ -14,19 +19,32 @@ import java.io.IOException;
 final class MediaMiddle {
     private Activity host;
     private Layout layout;
-    
+    private Control control;
+    private FocusView focusView;
     void init(Activity activity) {
         this.host = activity;
         this.host.getEventGroup().on(g -> g.create, this::onHostCreate);
         this.layout = host.layout;
+        this.control = host.control;
+        this.focusView = host.focusView;
     }
     
     private void onHostCreate(Bundle bundle) {
+        control.onGotSignal(this::onControlGotSignal);
         PermissionChecker fileReadPermissionChecker = new PermissionChecker(host, true, Manifest.permission.READ_EXTERNAL_STORAGE);
         fileReadPermissionChecker.getEventGroup().on(g -> g.permissionGranted, e -> {
             this.create();
         });
         fileReadPermissionChecker.fire();
+    }
+    
+    private void onControlGotSignal(ControlSignal signal) {
+        if(focusView.getFocusPos()!=FOCUS_MIDDLE) return;
+        if (CTRL_MEDIA_NEXT_SECTION.equals(signal)) {
+            toNextSection();
+        } else if (CTRL_MEDIA_PREV_SECTION.equals(signal)) {
+            toPrevSection();
+        }
     }
     
     private final MediaView.Section[] sections = new MediaView.Section[]{

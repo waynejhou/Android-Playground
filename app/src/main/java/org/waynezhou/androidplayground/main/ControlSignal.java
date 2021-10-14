@@ -2,10 +2,12 @@ package org.waynezhou.androidplayground.main;
 
 import org.waynezhou.libUtil.EnumClass;
 
+
 final class ControlSignal extends EnumClass.Int {
     public static final ControlSignal CTRL_ROTATE = new ControlSignal("Rotate");
-    public static final ControlSignal CTRL_ROTATE_PORT = new ControlSignal("Rotate Port");
-    public static final ControlSignal CTRL_ROTATE_LAND = new ControlSignal("Rotate Land");
+    public static final ControlSignal CTRL_ROTATE_REQUEST = new ControlSignal("Rotate Request");
+    public static final ControlSignal CTRL_ROTATE_PORT_REQUEST = new ControlSignal("Rotate Port Request");
+    public static final ControlSignal CTRL_ROTATE_LAND_REQUEST = new ControlSignal("Rotate Land Request");
     public static final ControlSignal CTRL_LAYOUT_LAND = new ControlSignal("Layout Port Std");
     public static final ControlSignal CTRL_LAYOUT_LAND_TOP = new ControlSignal("Layout Port Std");
     public static final ControlSignal CTRL_LAYOUT_LAND_MIDDLE = new ControlSignal("Layout Port Std");

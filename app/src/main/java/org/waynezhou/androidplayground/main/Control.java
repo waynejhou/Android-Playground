@@ -13,6 +13,9 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.event.EventHandler;
+import org.waynezhou.libUtil.event.EventHolder;
+import org.waynezhou.libUtil.event.EventListener;
 import org.waynezhou.libUtil.eventArgs.SensorChangedEventArgs;
 
 final class Control {
@@ -21,7 +24,6 @@ final class Control {
     private FocusView focusView;
     private Rotate rotate;
     private Control control;
-    //private SensorToggle gSensor;
     
     void init(Activity activity) {
         this.host = activity;
@@ -29,14 +31,12 @@ final class Control {
         focusView = host.focusView;
         rotate = host.rotate;
         control = host.control;
-        //this.gSensor = new SensorToggle(host, Sensor.TYPE_ACCELEROMETER, SensorManager.SENSOR_DELAY_UI);
-        //gSensor.getEventGroup().on(e -> e.changed, this::onGSensorValueChanged);
+        
         //this.host.getEventGroup().on(g->g.pause, $->gSensor.Off());
         //this.host.getEventGroup().on(g->g.resume, $->gSensor.On());
         this.host.getEventGroup()
           .on(g -> g.create, this::onHostCreate)
-          .on(g -> g.configurationChanged, this::onHostConfigurationChanged)
-        .on(g->g.keyDown, this::onHostKeyDown)
+          .on(g -> g.keyDown, this::onHostKeyDown)
         ;
     }
     
@@ -113,29 +113,7 @@ final class Control {
         });
     }
     
-    private void onGSensorValueChanged(SensorChangedEventArgs e) {
-        if (!layout.isContentViewSet()) return;
-        float[] axis = e.event.values;
-        final float x = axis[0];
-        final float y = axis[1];
-        //final float z = axis[2];
-        final float g = SensorManager.STANDARD_GRAVITY;
-        //LogHelper.d("x: "+x+" y: "+y);
-        if ((Math.abs(x - 0) < 1f && Math.abs(y - g) < 1f) && rotate.isNotPort()) {
-            control.sendSignal(CTRL_ROTATE_PORT);
-        } else if ((Math.abs(x - g) < 1f && Math.abs(y - 0) < 1f) && rotate.isNotLand()) {
-            control.sendSignal(CTRL_ROTATE_LAND);
-        }
-    }
-    
-    private void onHostConfigurationChanged(Configuration newConfig) {
-        LogHelper.d("new orientation %d", newConfig.orientation);
-        if (rotate.isOrientationChanged(newConfig.orientation)) {
-            control.sendSignal(CTRL_ROTATE);
-        }
-    }
-    
-    private void onHostKeyDown(Activity.KeyDownEventArgs  e) {
+    private void onHostKeyDown(Activity.KeyDownEventArgs e) {
         LogHelper.d(e.keyCode);
         if (e.keyCode == KeyEvent.KEYCODE_1) {
             control.sendSignal(CTRL_LAYOUT_PORT_STD);
@@ -161,107 +139,12 @@ final class Control {
     }
     
     void sendSignal(ControlSignal signal) {
-        host.runOnUiThread(() -> onGotSignal(signal));
-        
+        host.runOnUiThread(() -> gotSignal.invoke(signal));
     }
     
-    private void onGotSignal(ControlSignal signal) {
-        LogHelper.i(signal);
-        if (CTRL_ROTATE.equals(signal)) {
-            rotate.auto();
-        } else if (CTRL_ROTATE_LAND.equals(signal)) {
-            rotate.toLand();
-        } else if (CTRL_ROTATE_PORT.equals(signal)) {
-            rotate.toPort();
-        } else if (CTRL_LAYOUT_PORT_STD.equals(signal)) {
-            onGotLayoutPortStd();
-        } else if (CTRL_LAYOUT_PORT_HALF.equals(signal)) {
-            onGotLayoutPortHalf();
-        } else if (CTRL_LAYOUT_PORT_FULL.equals(signal)) {
-            onGotLayoutPortFull();
-        } else if (CTRL_LAYOUT_PORT_TOP_FULL.equals(signal)) {
-            onGotLayoutPortTopFull();
-        } else if (CTRL_LAYOUT_PORT_TOP_HALF.equals(signal)) {
-            onGotLayoutPortTopHalf();
-        } else if (CTRL_LAYOUT_PORT_MIDDLE_FULL.equals(signal)) {
-            onGotLayoutPortMiddleFull();
-        } else if (CTRL_LAYOUT_PORT_MIDDLE_HALF.equals(signal)) {
-            onGotLayoutPortMiddleHalf();
-        } /*else if (CTRL_MEDIA_NEXT_SECTION.equals(signal)) {
-            if (focusView.getFocusPos() == FOCUS_TOP) {
-                host.mediaTop.toNextSection();
-            } else if (focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
-                host.mediaMiddle.toNextSection();
-            }
-        } else if (CTRL_MEDIA_PREV_SECTION.equals(signal)) {
-            if (focusView.getFocusPos() == FOCUS_TOP) {
-                host.mediaTop.toPrevSection();
-            } else if (focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
-                host.mediaMiddle.toPrevSection();
-            }
-        }*/ else if (CTRL_FOCUS_NEXT.equals(signal)) {
-            focusView.focusNext();
-        } else if (CTRL_FOCUS_PREV.equals(signal)) {
-            focusView.focusPrev();
-        } else if (CTRL_FOCUS_TOP.equals(signal)) {
-            focusView.focus(FOCUS_TOP);
-        } else if (CTRL_FOCUS_MIDDLE.equals(signal)) {
-            focusView.focus(FOCUS_MIDDLE);
-        } else if (CTRL_FOCUS_BOTTOM.equals(signal)) {
-            focusView.focus(FOCUS_BOTTOM);
-        }
-    }
+    private final EventHandler<ControlSignal> gotSignal = new EventHandler<>();
     
-    private void onGotLayoutPortStd() {
-        if (rotate.isPort()) {
-            layout.setPortCurrent(layout.port_std);
-            layout.layoutAnimated(layout.getPortCurrent());
-        }
-    }
-    
-    private void onGotLayoutPortFull() {
-        if (focusView.getFocusPos() == FOCUS_TOP) {
-            onGotLayoutPortTopFull();
-        }
-        if (focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
-            onGotLayoutPortMiddleFull();
-        }
-    }
-    
-    private void onGotLayoutPortHalf() {
-        if (focusView.getFocusPos() == FOCUS_TOP) {
-            onGotLayoutPortTopHalf();
-        }
-        if (focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
-            onGotLayoutPortMiddleHalf();
-        }
-    }
-    
-    private void onGotLayoutPortTopFull() {
-        if (rotate.isPort()) {
-            layout.setPortCurrent(layout.port_topFull);
-            layout.layoutAnimated(layout.getPortCurrent());
-        }
-    }
-    
-    private void onGotLayoutPortTopHalf() {
-        if (rotate.isPort()) {
-            layout.setPortCurrent(layout.port_topHalf);
-            layout.layoutAnimated(layout.getPortCurrent());
-        }
-    }
-    
-    private void onGotLayoutPortMiddleFull() {
-        if (rotate.isPort()) {
-            layout.setPortCurrent(layout.port_middleFull);
-            layout.layoutAnimated(layout.getPortCurrent());
-        }
-    }
-    
-    private void onGotLayoutPortMiddleHalf() {
-        if (rotate.isPort()) {
-            layout.setPortCurrent(layout.port_middleHalf);
-            layout.layoutAnimated(layout.getPortCurrent());
-        }
+    EventHolder<ControlSignal>.ListenerToken onGotSignal(EventListener<ControlSignal> listener) {
+        return gotSignal.on(listener);
     }
 }

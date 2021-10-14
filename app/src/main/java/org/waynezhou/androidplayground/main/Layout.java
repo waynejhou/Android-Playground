@@ -1,5 +1,7 @@
 package org.waynezhou.androidplayground.main;
 
+import static org.waynezhou.androidplayground.main.ControlSignal.*;
+import static org.waynezhou.androidplayground.main.FocusPosition.FOCUS_TOP;
 import static org.waynezhou.androidplayground.main.LayoutChangedReason.*;
 import static org.waynezhou.libView.view_transition.LayoutTransitionPropertyBridges.*;
 
@@ -21,23 +23,28 @@ import org.waynezhou.libView.view_transition.ViewAnimatorArgs;
 import org.waynezhou.libView.view_transition.ViewStep;
 import org.waynezhou.libView.view_transition.ViewTransition;
 
-@SuppressWarnings({"DanglingJavadoc", "unused", "FieldCanBeLocal"})
+@SuppressWarnings({"unused", "FieldCanBeLocal"})
 final class Layout {
     private Activity host;
     private Layout layout;
     private Rotate rotate;
     private FocusView focusView;
+    private Control control;
+    
     void init(Activity activity) {
         this.host = activity;
         this.layout = host.layout;
         this.focusView = host.focusView;
         this.rotate = host.rotate;
-        host.getEventGroup().on(g->g.create, this::onHostCreate);
-        host.getEventGroup().on(g->g.resume, $->hideSystemUI());
+        this.control = host.control;
+        host.getEventGroup().on(g -> g.create, this::onHostCreate);
+        host.getEventGroup().on(g -> g.resume, $ -> hideSystemUI());
     }
     
     ActivityMainBinding binding;
+    
     private void onHostCreate(Bundle bundle) {
+        control.onGotSignal(this::onControlGotSignal);
         final WindowManager.LayoutParams lp = host.getWindow().getAttributes();
         lp.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT;
         binding = ActivityMainBinding.inflate(host.getLayoutInflater());
@@ -49,39 +56,12 @@ final class Layout {
         host.setContentView(binding.getRoot());
     }
     
+    // region input route
     void onRootDraw() {
     }
     
     boolean onPreDraw() {
         return true;
-    }
-    
-    @NonNull
-    private Runnable onceRotationRequested = DelegateUtils.NothingRunnable;
-    
-    void setOnceRotationRequested(@NonNull Runnable run) {
-        onceRotationRequested = run;
-    }
-    
-    private LayoutChangedReason changedReason = null;
-    
-    LayoutChangedReason getChangedReason() {
-        return changedReason;
-    }
-    
-    void setChangedReason(LayoutChangedReason changedReason) {
-        this.changedReason = changedReason;
-    }
-    
-    private boolean isContentViewSet = false;
-    
-    boolean isContentViewSet() {
-        return isContentViewSet;
-    }
-    
-    @SuppressWarnings("SameParameterValue")
-    void setContentViewSet(boolean contentViewSet) {
-        isContentViewSet = contentViewSet;
     }
     
     void onGlobalLayoutChanged() {
@@ -112,7 +92,9 @@ final class Layout {
         refreshLayoutProperties();
         //layoutAuto(ViewAnimatorArgs.builder().setDuration(500).build());
     }
+    // endregion
     
+    // region layouts
     private Integer rootWidth = null;
     private Integer rootHeight = null;
     private Integer rootLeft = null;
@@ -406,7 +388,7 @@ final class Layout {
         it.$_startAddStep(() -> binding.mainMiddleContainer)
           .pre(v -> v.setZ(0.5f)).preBuild(portTopHalf)
           .$_endAddStep();
-    
+        
         it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 0.90f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 0.90f).end()
@@ -434,6 +416,38 @@ final class Layout {
     })
       .build();
     
+    
+    // endregion
+    
+    // region get set property
+    @NonNull
+    private Runnable onceRotationRequested = DelegateUtils.NothingRunnable;
+    
+    void setOnceRotationRequested(@NonNull Runnable run) {
+        onceRotationRequested = run;
+    }
+    
+    private LayoutChangedReason changedReason = null;
+    
+    LayoutChangedReason getChangedReason() {
+        return changedReason;
+    }
+    
+    void setChangedReason(LayoutChangedReason changedReason) {
+        this.changedReason = changedReason;
+    }
+    
+    private boolean isContentViewSet = false;
+    
+    boolean isContentViewSet() {
+        return isContentViewSet;
+    }
+    
+    @SuppressWarnings("SameParameterValue")
+    void setContentViewSet(boolean contentViewSet) {
+        isContentViewSet = contentViewSet;
+    }
+    
     private ViewTransition<Layout> landCurrent = land_top;
     
     void setLandCurrent(ViewTransition<Layout> landCurrent) {
@@ -459,52 +473,6 @@ final class Layout {
             return portCurrent;
         }
         return landCurrent;
-    }
-    
-    void layout(ViewTransition<Layout> transition) {
-        transition.runWithoutAnimation(true);
-    }
-    
-    private final static ViewAnimatorArgs DefaultAnimatorArgs = ViewAnimatorArgs.builder()
-      .setDuration(500)
-      .setInterpolator(new DecelerateInterpolator())
-      .build();
-    
-    void layoutAnimated(ViewTransition<Layout> transition) {
-        layoutAnimated(transition, DefaultAnimatorArgs);
-    }
-    
-    private boolean isLayoutAnimating = false;
-    private AnimatorSet animatingAnimator = null;
-    
-    @SuppressWarnings("SameParameterValue")
-    void layoutAnimated(ViewTransition<Layout> transition, ViewAnimatorArgs args) {
-        if (animatingAnimator != null) animatingAnimator.cancel();
-        animatingAnimator = transition.createAnimatorSet(args);
-        animatingAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                isLayoutAnimating = true;
-            }
-            
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                isLayoutAnimating = false;
-                animatingAnimator = null;
-            }
-            
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                isLayoutAnimating = false;
-                animatingAnimator = null;
-            }
-            
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-            
-            }
-        });
-        animatingAnimator.start();
     }
     
     boolean isCurrentLand() {
@@ -555,6 +523,100 @@ final class Layout {
     boolean isLayoutPortStd(ViewTransition<Layout> layout) {
         return layout == port_std;
     }
+    // endregion
+    
+    // region output action
+    
+    private void onControlGotSignal(ControlSignal signal) {
+        if (CTRL_LAYOUT_PORT_STD.equals(signal)) {
+            toPort(port_std);
+        } else if (CTRL_LAYOUT_PORT_HALF.equals(signal)) {
+            toPortHalf();
+        } else if (CTRL_LAYOUT_PORT_FULL.equals(signal)) {
+            toPortFull();
+        } else if (CTRL_LAYOUT_PORT_TOP_FULL.equals(signal)) {
+            toPort(port_topFull);
+        } else if (CTRL_LAYOUT_PORT_TOP_HALF.equals(signal)) {
+            toPort(port_topHalf);
+        } else if (CTRL_LAYOUT_PORT_MIDDLE_FULL.equals(signal)) {
+            toPort(port_middleFull);
+        } else if (CTRL_LAYOUT_PORT_MIDDLE_HALF.equals(signal)) {
+            toPort(port_middleHalf);
+        }
+    }
+    
+    private void toPortHalf() {
+        if (rotate.isNotPort()) return;
+        if (focusView.getFocusPos() == FOCUS_TOP) {
+            toPort(port_topHalf);
+        }
+        if (focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
+            toPort(port_middleHalf);
+        }
+    }
+    
+    private void toPortFull() {
+        if (rotate.isNotPort()) return;
+        if (focusView.getFocusPos() == FOCUS_TOP) {
+            toPort(port_topFull);
+        }
+        if (focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
+            toPort(port_middleFull);
+        }
+    }
+    private void toPort(ViewTransition<Layout> newLayout) {
+        if (rotate.isNotPort()) return;
+        layout.setPortCurrent(newLayout);
+        layout.layoutAnimated(layout.getPortCurrent());
+    }
+    
+    
+    void layout(ViewTransition<Layout> transition) {
+        transition.runWithoutAnimation(true);
+    }
+    
+    private final static ViewAnimatorArgs DefaultAnimatorArgs = ViewAnimatorArgs.builder()
+      .setDuration(500)
+      .setInterpolator(new DecelerateInterpolator())
+      .build();
+    
+    void layoutAnimated(ViewTransition<Layout> transition) {
+        layoutAnimated(transition, DefaultAnimatorArgs);
+    }
+    
+    private boolean isLayoutAnimating = false;
+    private AnimatorSet animatingAnimator = null;
+    
+    @SuppressWarnings("SameParameterValue")
+    void layoutAnimated(ViewTransition<Layout> transition, ViewAnimatorArgs args) {
+        if (animatingAnimator != null) animatingAnimator.cancel();
+        animatingAnimator = transition.createAnimatorSet(args);
+        animatingAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                isLayoutAnimating = true;
+            }
+            
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                isLayoutAnimating = false;
+                animatingAnimator = null;
+            }
+            
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                isLayoutAnimating = false;
+                animatingAnimator = null;
+            }
+            
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            
+            }
+        });
+        animatingAnimator.start();
+    }
+    
     private void hideSystemUI() {
         View decorView = host.getWindow().getDecorView();
         int uiOptions = //View.SYSTEM_UI_FLAG_LOW_PROFILE
@@ -569,5 +631,5 @@ final class Layout {
             actionBar.hide();
         }
     }
-    
+    // endregion
 }

@@ -1,15 +1,40 @@
 package org.waynezhou.androidplayground.main;
 
+import static org.waynezhou.androidplayground.main.ControlSignal.*;
+import static org.waynezhou.androidplayground.main.FocusPosition.*;
+import android.os.Bundle;
+
 final class FocusView {
     private Activity host;
     private Rotate rotate;
     private Layout layout;
+    private Control control;
     void init(Activity activity) {
         this.host = activity;
         rotate = host.rotate;
         layout = host.layout;
+        control = host.control;
+        host.getEventGroup().on(e->e.create, this::onHostCreate);
     }
-
+    
+    private void onHostCreate(Bundle bundle) {
+        control.onGotSignal(this::onControlGotSignal);
+    }
+    
+    private void onControlGotSignal(ControlSignal signal) {
+        if (CTRL_FOCUS_NEXT.equals(signal)) {
+            focusNext();
+        } else if (CTRL_FOCUS_PREV.equals(signal)) {
+            focusPrev();
+        } else if (CTRL_FOCUS_TOP.equals(signal)) {
+            focus(FOCUS_TOP);
+        } else if (CTRL_FOCUS_MIDDLE.equals(signal)) {
+            focus(FOCUS_MIDDLE);
+        } else if (CTRL_FOCUS_BOTTOM.equals(signal)) {
+            focus(FOCUS_BOTTOM);
+        }
+    }
+    
     private FocusPosition focusPos = FocusPosition.FOCUS_TOP;
 
     FocusPosition getFocusPos() {
