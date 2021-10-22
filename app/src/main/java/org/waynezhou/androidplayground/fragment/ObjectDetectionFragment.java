@@ -105,11 +105,15 @@ public class ObjectDetectionFragment extends Fragment
         
         List<Recognition> detections = new ArrayList<>();
         Map<Integer, Object> outputMap = new HashMap<>();
-        outputMap.put(0, new float[1][OUTPUT_WIDTH_TINY[0]][4]);
-        outputMap.put(1, new float[1][OUTPUT_WIDTH_TINY[1]][labels.length]);
+        outputMap.put(0, new float[1][50][6]);
+        outputMap.put(1, new int[1]);
         Object[] inputArray = {byteBuffer};
         model.process(inputArray, outputMap);
-        if(!oneTime){
+        float[][][] pred_result = (float [][][]) outputMap.get(0);
+        int[] vaild_count = (int[]) outputMap.get(1);
+        LogHelper.d(pred_result[0].length);
+        LogHelper.d(vaild_count[0]);
+        /*if(!oneTime){
             getActivity().runOnUiThread(()->{
                 binding.objdetSecretImage.setImageBitmap(croppedBitmap.copy(Bitmap.Config.ARGB_8888 ,false));
             });
@@ -145,7 +149,7 @@ public class ObjectDetectionFragment extends Fragment
                 detections.add(new Recognition("" + i, labels[detectedClass],score,rectF,detectedClass ));
             }
         }
-        LogHelper.d(detections.size());
+        LogHelper.d(detections.size());*/
     }
     
     
