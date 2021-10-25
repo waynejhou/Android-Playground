@@ -45,8 +45,7 @@ public abstract class EventGroup <TEventGroup extends EventGroup<TEventGroup>>  
         applier.apply(group);
         return group;
     }
-
-
+    
     public class Invoker{
         private final TEventGroup  group;
         private Invoker(TEventGroup group){
