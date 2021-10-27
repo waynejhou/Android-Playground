@@ -1,6 +1,6 @@
 package org.waynezhou.libutilkt.event
 
-abstract class EventGroup<TEventGroup : EventGroup<TEventGroup>> protected constructor() {
+abstract class BaseEventGroup<TEventGroup : BaseEventGroup<TEventGroup>> protected constructor() {
 
     @Suppress("UNCHECKED_CAST")
     fun <TEventArgs> on(
@@ -20,9 +20,8 @@ abstract class EventGroup<TEventGroup : EventGroup<TEventGroup>> protected const
         return this
     }
 
-
     @Suppress("UNCHECKED_CAST")
-    fun <TEventArgs> on_(
+    fun <TEventArgs> tokenOn(
         selector: (TEventGroup)->EventHolder<TEventArgs>,
         listener: EventListener<TEventArgs>
     ): EventHolder<TEventArgs>.ListenerToken {
@@ -30,7 +29,7 @@ abstract class EventGroup<TEventGroup : EventGroup<TEventGroup>> protected const
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <TEventArgs> once_(
+    fun <TEventArgs> tokenOnce(
         selector: (TEventGroup)->EventHolder<TEventArgs>,
         listener: EventListener<TEventArgs>
     ): EventHolder<TEventArgs>.ListenerToken {
@@ -40,16 +39,16 @@ abstract class EventGroup<TEventGroup : EventGroup<TEventGroup>> protected const
     inner class Invoker internal constructor(
         private val group: TEventGroup)
     {
-        operator fun <TEventArgs> invoke(
+        fun <TEventArgs> invoke(
             selector: (TEventGroup)->EventHolder<TEventArgs>,
             eventArgs: TEventArgs
         ) {
             selector(group).invoke(eventArgs)
         }
     }
-    private var invoker: EventGroup<TEventGroup>.Invoker? = null
+    private var invoker: BaseEventGroup<TEventGroup>.Invoker? = null
     @Suppress("UNCHECKED_CAST")
-    protected fun getInvoker(): EventGroup<TEventGroup>.Invoker {
+    protected fun getInvoker(): BaseEventGroup<TEventGroup>.Invoker {
         if (invoker == null) invoker = Invoker(this as TEventGroup)
         return invoker!!
     }

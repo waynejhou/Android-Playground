@@ -4,12 +4,12 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
+import org.waynezhou.libutilkt.event.BaseEventGroup
 import org.waynezhou.libutilkt.event.EventHolder
-import java.util.*
 
-
+@Suppress("unused")
 abstract class AppCompatActivityWrapper : AppCompatActivity() {
-    class EventGroup : org.waynezhou.libutilkt.event.EventGroup<EventGroup>() {
+    class EventGroup : BaseEventGroup<EventGroup>() {
         val create = EventHolder<Bundle?>()
         val start = EventHolder<Unit>()
         val resume = EventHolder<Unit>()
@@ -18,19 +18,14 @@ abstract class AppCompatActivityWrapper : AppCompatActivity() {
         val destroy = EventHolder<Unit>()
         val configurationChanged = EventHolder<Configuration>()
         val keyDown = EventHolder<KeyDownEventArgs>()
-        internal fun privateGetInvoker(): org.waynezhou.libutilkt.event.EventGroup<EventGroup>.Invoker {
-            return super.getInvoker()
-        }
+        internal fun getPrivateInvoker() = getInvoker()
     }
-
 
     private val eventGroup = EventGroup()
-    fun getEventGroup(): org.waynezhou.libutilkt.event.EventGroup<EventGroup> {
-        return eventGroup
-    }
 
-    private val invoker: org.waynezhou.libutilkt.event.EventGroup<EventGroup>.Invoker =
-        eventGroup.privateGetInvoker()
+    val events: BaseEventGroup<EventGroup> get() = eventGroup
+
+    private val invoker = eventGroup.getPrivateInvoker()
 
     class KeyDownEventArgs(val keyCode: Int, val keyEvent: KeyEvent)
 

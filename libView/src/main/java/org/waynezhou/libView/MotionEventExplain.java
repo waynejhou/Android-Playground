@@ -1,6 +1,6 @@
 package org.waynezhou.libView;
 
-import android.bluetooth.BluetoothGatt;
+
 import android.view.MotionEvent;
 
 import java.util.HashMap;

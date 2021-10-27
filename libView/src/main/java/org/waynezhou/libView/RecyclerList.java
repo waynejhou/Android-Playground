@@ -247,14 +247,14 @@ public class RecyclerList<TItem, TViewBinding extends ViewBinding>
     public boolean addAll(@NonNull Collection<? extends TItem> c) {
         int from = source.size();
         boolean result = source.addAll(c);
-        activity.runOnUiThread(() -> notifyItemRangeInserted(from, +c.size() - 1));
+        activity.runOnUiThread(() -> notifyItemRangeInserted(from, c.size() ));
         return result;
     }
 
     @Override
     public boolean addAll(int index, @NonNull Collection<? extends TItem> c) {
         boolean result = source.addAll(index, c);
-        activity.runOnUiThread(() -> notifyItemRangeInserted(index, index + c.size() - 1));
+        activity.runOnUiThread(() -> notifyItemRangeInserted(index,  c.size() ));
         return result;
     }
 
