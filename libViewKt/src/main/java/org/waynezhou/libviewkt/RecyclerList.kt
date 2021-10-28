@@ -11,14 +11,18 @@ import org.waynezhou.libutilkt.reflection.ReflectionException
 
 class RecyclerList<TItem, TItemViewBinding : ViewBinding>
 constructor(
-    keeper: List<TItem>,
     private val activity: AppCompatActivity,
     private val itemViewBindingClass: Class<TItemViewBinding>,
+    keeper: List<TItem> = listOf(),
 ) : RecyclerView.Adapter<RecyclerList<TItem, TItemViewBinding>.ViewHolder>(), MutableList<TItem> {
     private val source = keeper.toMutableList()
 
-    private val binder: (binding: TItemViewBinding, source: List<TItem>, position: Int) -> Unit =
+    private var binder: (binding: TItemViewBinding, source: List<TItem>, position: Int) -> Unit =
         { _, _, _ -> }
+
+    fun onBind(binder: (binding: TItemViewBinding, source: List<TItem>, position: Int) -> Unit){
+        this.binder = binder
+    }
 
     inner class ViewHolder constructor(
         private val binding: TItemViewBinding
@@ -73,7 +77,7 @@ constructor(
 
     //endregion
 
-    // list mutable implement with notify
+    // region list mutable implement with notify
     override fun add(element: TItem): Boolean = source.add(element).apply {
         activity.runOnUiThread{notifyItemChanged(size-1)}
     }
@@ -86,33 +90,45 @@ constructor(
         activity.runOnUiThread{notifyItemRangeChanged(index, elements.size)}
     }
 
-    override fun addAll(elements: Collection<TItem>): Boolean= source.addAll(elements).apply {
+    override fun addAll(elements: Collection<TItem>): Boolean = source.addAll(elements).apply {
         activity.runOnUiThread{notifyItemRangeChanged(size-elements.size, elements.size)}
     }
 
-    override fun clear() =  source.clear().run {
-        activity.runOnUiThread{notifyItemRangeRemoved(0, size)}
+    override fun clear() {
+        val count = size
+        source.clear()
+        activity.runOnUiThread{notifyItemRangeRemoved(0, count)}
     }
 
     override fun remove(element: TItem): Boolean {
-        TODO("Not yet implemented")
+        val idx = source.indexOf(element)
+        val ret = source.remove(element)
+        activity.runOnUiThread{notifyItemRemoved(idx)}
+        return ret
     }
 
-    override fun removeAll(elements: Collection<TItem>): Boolean {
-        TODO("Not yet implemented")
+    @SuppressLint("NotifyDataSetChanged")
+    override fun removeAll(elements: Collection<TItem>): Boolean = source.removeAll(elements).run {
+        activity.runOnUiThread { notifyDataSetChanged() }
+        this
     }
 
-    override fun removeAt(index: Int): TItem {
-        TODO("Not yet implemented")
+    override fun removeAt(index: Int): TItem = source.removeAt(index).run {
+        activity.runOnUiThread { notifyItemRemoved(index) }
+        this
     }
 
-    override fun retainAll(elements: Collection<TItem>): Boolean {
-        TODO("Not yet implemented")
+    @SuppressLint("NotifyDataSetChanged")
+    override fun retainAll(elements: Collection<TItem>): Boolean= source.removeAll(elements).run {
+        activity.runOnUiThread { notifyDataSetChanged() }
+        this
     }
 
-    override fun set(index: Int, element: TItem): TItem {
-        TODO("Not yet implemented")
+    override fun set(index: Int, element: TItem): TItem = source.set(index, element).run {
+        activity.runOnUiThread { notifyItemChanged(index) }
+        this
     }
+    // endregion
 
 
 }

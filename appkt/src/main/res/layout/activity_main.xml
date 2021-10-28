@@ -4,10 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <Button
-        android:id="@+id/main_hello_btn"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Hello World"
-        tools:ignore="HardcodedText" />
+    <FrameLayout
+        android:id="@+id/main_audio_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"/>
+    <FrameLayout
+        android:id="@+id/main_audio_control"
+        android:layout_width="0dp"
+        android:layout_height="0dp"/>
 </FrameLayout>

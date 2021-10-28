@@ -1,2 +1,4 @@
-package org.waynezhou.libUtil.service;public class ForegroundService {
+package org.waynezhou.libUtil.service;
+
+public class ForegroundService {
 }
