@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import org.waynezhou.androidplayground.databinding.FragmentAudioControlBinding
+import org.waynezhou.androidplayground.main.AudioList
 
 
 class Fragment : androidx.fragment.app.Fragment() {
@@ -28,11 +29,12 @@ class Fragment : androidx.fragment.app.Fragment() {
         return binding.root
     }
 
-    fun setAudio(uri: Uri){
+    fun setAudio(audio: AudioList.Audio){
         context?.run{
             player.reset()
-            player.setDataSource(this, uri)
+            player.setDataSource(this, audio.uri)
             player.prepareAsync()
+            binding.audioControlTitle.text = audio.displayName
             return
         }
         throw NullPointerException()

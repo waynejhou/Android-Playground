@@ -17,7 +17,7 @@
         android:id="@+id/audio_item_text_title"
         style="@style/AudioItemTextStyle"
         app:layout_constraintStart_toStartOf="@id/audio_item_guideline_v0"
-        app:layout_constraintEnd_toEndOf="@id/audio_item_guideline_v1"
+        app:layout_constraintEnd_toEndOf="@id/audio_item_guideline_v3"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="[Title]"
@@ -31,6 +31,7 @@
         app:layout_constraintStart_toStartOf="@id/audio_item_guideline_v1"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="[Album]"
+        android:visibility="gone"
         />
     <TextView
         android:id="@+id/audio_item_text_artist"
@@ -40,6 +41,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="[Artist]"
+        android:visibility="gone"
         />
     <TextView
         android:id="@+id/audio_item_text_duration"

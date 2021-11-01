@@ -1,77 +1,107 @@
 package org.waynezhou.androidplayground.main
 
 import android.Manifest
+import android.animation.Animator
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.core.database.getStringOrNull
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import org.waynezhou.androidplayground.databinding.ActivityMainBinding
 import org.waynezhou.androidplayground.databinding.ItemAudioListBinding
-import org.waynezhou.libutilkt.EnumClass
 import org.waynezhou.libutilkt.LogHelper
 import org.waynezhou.libutilkt.PermissionChecker
 import org.waynezhou.libviewkt.AppCompatActivityWrapper
 import org.waynezhou.libviewkt.RecyclerList
+import org.waynezhou.libviewkt.view_transition.*
+import java.text.DecimalFormat
 
 class Activity : AppCompatActivityWrapper() {
-
     internal val layout = Layout()
     private val audioList = AudioList()
+    internal val audioControl = AudioControl()
     override fun onInitComponents(savedInstanceState: Bundle?) {
         layout.init(this)
         audioList.init(this)
+        audioControl.init(this)
     }
 
 }
 
-class Layout {
+class AudioControl{
     private lateinit var host: Activity
-    internal lateinit var binding: ActivityMainBinding
+    private lateinit var layout: Layout
+    private val binding: ActivityMainBinding
+        get() = layout.binding
+    private lateinit var fragmentManager: FragmentManager
     internal fun init(activity: Activity) {
         host = activity
-        host.events
-            .on({ it.create }, this::onHostCreate)
+        layout = host.layout
+        fragmentManager = host.supportFragmentManager
+        host.events.on({it.backPressed}, this::onHostBackPressed)
     }
 
-    private fun onHostCreate(savedInstanceState: Bundle?) {
-        binding = ActivityMainBinding.inflate(host.layoutInflater)
-        binding.root.viewTreeObserver.run {
-            addOnGlobalLayoutListener(this@Layout::onGlobalLayout)
-        }
-        setChangedReason(ContentViewSet);
-        host.setContentView(binding.root)
+    private fun onHostBackPressed(u:Unit) {
+        layout.current = layout.layoutAudioList;
+        layout.refresh()
     }
 
-    private var changedReason: ChangedReason? = null
-    fun setChangedReason(reason: ChangedReason) {
-        changedReason = reason
-    }
 
-    private var rootWid = -1
-    private var rootHei = -1
-    private fun onGlobalLayout() {
-        try {
-            changedReason?.let { _->
-                if (rootWid == binding.root.width && rootHei == binding.root.height) return
-                rootWid = binding.root.width
-                rootHei = binding.root.height
+    private val fragment1 = org.waynezhou.androidplayground.audio.control.Fragment()
+    private val fragment2 = org.waynezhou.androidplayground.audio.control.Fragment()
 
+    fun openAudio(audio: AudioList.Audio){
+        layout.current = layout.layoutAudioControl
+        when (layout.activatedAudioControl) {
+            2 -> {
+                layout.activatedAudioControl = 1
+                layout.refresh(
+                    preAction = {
+                        fragmentManager.beginTransaction()
+                            .add(binding.mainAudioControl1.id, fragment1)
+                            .commitNow()
+                        fragment1.setAudio(audio)
+                    },
+                    postAction = {
+                        fragmentManager.beginTransaction()
+                            .remove(fragment2)
+                            .commitNow()
+                    }
+                )
             }
-        }finally {
-            changedReason = null
+            1 -> {
+                layout.activatedAudioControl = 2
+                layout.refresh(
+                    preAction = {
+                        fragmentManager.beginTransaction()
+                            .add(binding.mainAudioControl2.id, fragment2)
+                            .commitNow()
+                        fragment2.setAudio(audio)
+                    },
+                    postAction = {
+                        fragmentManager.beginTransaction()
+                            .remove(fragment1)
+                            .commitNow()
+                    }
+                )
+            }
+            else -> {
+                layout.activatedAudioControl = 1
+                layout.refresh(
+                    preAction = {
+                        fragmentManager.beginTransaction()
+                            .add(binding.mainAudioControl1.id, fragment1)
+                            .commitNow()
+                        fragment1.setAudio(audio)
+                    }
+                )
+            }
         }
     }
 
-    class ChangedReason constructor(statement: String) : EnumClass.Int(statement)
-    companion object {
-        val ContentViewSet = ChangedReason("ContentView Set")
-    }
 }
-
 
 class AudioList {
     private lateinit var host: Activity
@@ -87,7 +117,6 @@ class AudioList {
         fragmentManager = host.supportFragmentManager
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun onHostCreate(savedInstanceState: Bundle?) {
         PermissionChecker(host, true, Manifest.permission.READ_EXTERNAL_STORAGE)
             .apply {
@@ -96,7 +125,11 @@ class AudioList {
     }
 
     lateinit var list: RecyclerList<Audio, ItemAudioListBinding>
-    private val audioListFragment = org.waynezhou.androidplayground.audio.list.Fragment(this)
+    private val audioListFragment = org.waynezhou.androidplayground.audio.list.Fragment(this).apply {
+        onClick{ view, audio, i ->
+            this@AudioList.host.audioControl.openAudio(audio)
+        }
+    }
     private fun onReadPermissionAllow(_list: List<String>) {
         list = RecyclerList<Audio, ItemAudioListBinding>(
             host,
@@ -106,12 +139,13 @@ class AudioList {
                 val audio = source[position]
                 binding.audioItemTextNo.text = audio.id.toString()
                 binding.audioItemTextTitle.text = audio.displayName
+                binding.audioItemTextDuration.text = formatAudioDuration(audio.duration)
             }
         }
         fragmentManager.beginTransaction()
             .add(binding.mainAudioList.id, audioListFragment)
             .commitNow()
-        list.addAll(getAudioList());
+        list.addAll(getAudioList())
     }
 
 
@@ -149,6 +183,16 @@ class AudioList {
                 yield(audio)
             }
             close()
+        }
+    }
+
+    companion object {
+        private val audioDurationNumFormat = DecimalFormat("00")
+        private fun formatAudioDuration(duration: Long): String {
+            val h = audioDurationNumFormat.format(duration / 3600000);
+            val m = audioDurationNumFormat.format(duration / 60000);
+            val s = audioDurationNumFormat.format(duration / 1000 % 60);
+            return "$h:$m:$s"
         }
     }
 }

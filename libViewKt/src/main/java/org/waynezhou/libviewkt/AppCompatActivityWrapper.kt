@@ -18,6 +18,7 @@ abstract class AppCompatActivityWrapper : AppCompatActivity() {
         val destroy = EventHolder<Unit>()
         val configurationChanged = EventHolder<Configuration>()
         val keyDown = EventHolder<KeyDownEventArgs>()
+        val backPressed = EventHolder<Unit>()
         internal fun getPrivateInvoker() = getInvoker()
     }
 
@@ -68,7 +69,11 @@ abstract class AppCompatActivityWrapper : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        invoker.invoke( { it.keyDown },KeyDownEventArgs(keyCode, event))
+        invoker.invoke({ it.keyDown }, KeyDownEventArgs(keyCode, event))
         return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onBackPressed() {
+        invoker.invoke({ it.backPressed }, Unit)
     }
 }

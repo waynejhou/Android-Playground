@@ -14,6 +14,10 @@ import org.waynezhou.libutilkt.LogHelper
 
 class Fragment constructor(private val audioList:AudioList) : androidx.fragment.app.Fragment() {
     private lateinit var binding: FragmentAudioListBinding
+    private var onClickListener: (View, AudioList.Audio, Int)->Unit = {_,_,_->}
+    fun onClick(listener: (View, AudioList.Audio, Int)->Unit){
+        onClickListener = listener
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -30,7 +34,10 @@ class Fragment constructor(private val audioList:AudioList) : androidx.fragment.
                         e?.let{ it ->
                             val childView: View? = (this@run).findChildViewUnder(it.x, it.y)
                             val idx = (this@run).children.indexOf(childView)
-                            LogHelper.d(audioList.list[idx])
+                            if(idx in audioList.list.indices){
+                                onClickListener(childView!!, audioList.list[idx], idx)
+                                LogHelper.d(audioList.list[idx])
+                            }
                         }
                         return true
                     }
