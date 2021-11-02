@@ -1,22 +1,28 @@
 package org.waynezhou.androidplayground.main
 
 import android.Manifest
+import android.animation.Animator
+import android.content.ContentValues
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.core.database.getStringOrNull
 import androidx.fragment.app.FragmentManager
+import org.waynezhou.androidplayground.R
 import org.waynezhou.androidplayground.databinding.ActivityMainBinding
 import org.waynezhou.androidplayground.databinding.ItemAudioListBinding
 import org.waynezhou.libutilkt.LogHelper
 import org.waynezhou.libutilkt.PermissionChecker
 import org.waynezhou.libviewkt.ActivityComponent
-import org.waynezhou.libviewkt.AppCompatActivityWrapper
+import org.waynezhou.libviewkt.ComponentedAppCompatActivityWrapper
 import org.waynezhou.libviewkt.RecyclerList
 import org.waynezhou.libviewkt.view_transition.*
 import java.text.DecimalFormat
 
-class Activity : AppCompatActivityWrapper(), IActivityStartup, IActivityLayout {
+class Activity : ComponentedAppCompatActivityWrapper(), IActivityStartup, IActivityLayout,
+    IAudioControl {
     private val startup = Startup()
     private val layout = Layout()
     private val audioList = AudioList()
@@ -28,85 +34,85 @@ class Activity : AppCompatActivityWrapper(), IActivityStartup, IActivityLayout {
         audioControl.init(this)
     }
 
+    override val startupReasons: StartupReasons
+        get() = startup.startupReasons
     override val startupReason: StartupReason
         get() = startup.startupReason
     override val startupUri: Uri?
         get() = startup.startupUri
+    override val layouts: Layouts
+        get() = layout.layouts
     override val binding: ActivityMainBinding
         get() = layout.binding
 
+    override fun applyCurrentLayout(
+        args: ViewAnimatorArgs,
+        preAction: (Animator) -> Unit,
+        postAction: (Animator) -> Unit
+    ) = layout.applyCurrentLayout(args, preAction, postAction)
 
+    override var currentLayout: ViewTransition<Layouts>
+        get() = layout.currentLayout
+        set(value) {
+            layout.currentLayout = value
+        }
+
+    override fun openAudio(audio: AudioList.Audio) = audioControl.openAudio(audio)
+    override fun openAudio(audio: Uri) = audioControl.openAudio(audio)
 }
 
+interface IAudioControl {
+    fun openAudio(audio: AudioList.Audio)
+    fun openAudio(audio: Uri)
+}
 
-class AudioControl : ActivityComponent<Activity>() {
+class AudioControl : ActivityComponent<Activity>(), IAudioControl {
     private val binding: ActivityMainBinding
         get() = host.binding
-    private val fragmentManager: FragmentManager
-        get() = host.supportFragmentManager
 
     override fun onHostCreate(savedInstanceState: Bundle?) {
         host.events.on({ it.backPressed }, this::onHostBackPressed)
     }
 
-    private fun onHostBackPressed(u: Unit) {
-        layout.current = layout.layoutAudioList;
-        layout.refresh()
-    }
-
-
-    private val fragment1 = org.waynezhou.androidplayground.audio.control.Fragment()
-    private val fragment2 = org.waynezhou.androidplayground.audio.control.Fragment()
-
-    fun openAudio(audio: AudioList.Audio) {
-        layout.current = layout.layoutAudioControl
-        when (layout.activatedAudioControl) {
-            2 -> {
-                layout.activatedAudioControl = 1
-                layout.refresh(
-                    preAction = {
-                        fragmentManager.beginTransaction()
-                            .add(binding.mainAudioControl1.id, fragment1)
-                            .commitNow()
-                        fragment1.setAudio(audio)
-                    },
-                    postAction = {
-                        fragmentManager.beginTransaction()
-                            .remove(fragment2)
-                            .commitNow()
-                    }
-                )
-            }
-            1 -> {
-                layout.activatedAudioControl = 2
-                layout.refresh(
-                    preAction = {
-                        fragmentManager.beginTransaction()
-                            .add(binding.mainAudioControl2.id, fragment2)
-                            .commitNow()
-                        fragment2.setAudio(audio)
-                    },
-                    postAction = {
-                        fragmentManager.beginTransaction()
-                            .remove(fragment1)
-                            .commitNow()
-                    }
-                )
-            }
-            else -> {
-                layout.activatedAudioControl = 1
-                layout.refresh(
-                    preAction = {
-                        fragmentManager.beginTransaction()
-                            .add(binding.mainAudioControl1.id, fragment1)
-                            .commitNow()
-                        fragment1.setAudio(audio)
-                    }
-                )
+    private fun onHostBackPressed(args: ComponentedAppCompatActivityWrapper.BackPressEventArgs) {
+        host.run {
+            if(startupReason==startupReasons.fromUri){
+                args.runSuperBackPress = true
+            }else{
+                currentLayout = layouts.audioList
+                applyCurrentLayout()
             }
         }
     }
 
+    private val fragment = org.waynezhou.androidplayground.audio.control.Fragment()
+
+    override fun openAudio(audio: AudioList.Audio) {
+        host.run {
+            currentLayout = layouts.audioControl
+            if( fragment !in supportFragmentManager.fragments){
+                supportFragmentManager.beginTransaction()
+                    .add(binding.mainAudioControl.id, fragment)
+                    .commitNow()
+            }
+            fragment.setAudio(audio)
+            host.applyCurrentLayout()
+
+        }
+    }
+    override fun openAudio(audio: Uri) {
+        host.run {
+            currentLayout = layouts.audioControl
+            if( fragment !in supportFragmentManager.fragments){
+                supportFragmentManager.beginTransaction()
+                    .add(binding.mainAudioControl.id, fragment)
+                    .commitNow()
+            }
+            fragment.setAudio(audio)
+            host.applyCurrentLayout()
+
+        }
+    }
 }
 
 class AudioList : ActivityComponent<Activity>() {
@@ -124,13 +130,15 @@ class AudioList : ActivityComponent<Activity>() {
 
     lateinit var list: RecyclerList<Audio, ItemAudioListBinding>
     private val audioListFragment =
-        org.waynezhou.androidplayground.audio.list.Fragment(this).apply {
-            onClick { view, audio, i ->
-                this@AudioList.host.audioControl.openAudio(audio)
+        org.waynezhou.androidplayground.audio.list.Fragment(this).let {
+            it.onClick { view, audio, i ->
+                this.host.openAudio(audio)
             }
+            it
         }
 
     private fun onReadPermissionAllow(_list: List<String>) {
+
         list = RecyclerList<Audio, ItemAudioListBinding>(
             host,
             ItemAudioListBinding::class.java
@@ -167,6 +175,7 @@ class AudioList : ActivityComponent<Activity>() {
             MediaStore.Audio.Media.DURATION,
         ).withIndex().associateBy({ it.value }, { it.index })
 
+        host.contentResolver.refresh(baseUri, null, null)
         val cursor = host.contentResolver.query(
             baseUri, columns.keys.toTypedArray(),
             "${MediaStore.Audio.Media.IS_MUSIC}=1", null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER

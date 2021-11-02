@@ -2,7 +2,7 @@ package org.waynezhou.libutilkt
 
 import java.util.*
 
-@Suppress("LeakingThis")
+@Suppress("LeakingThis", "MemberVisibilityCanBePrivate")
 abstract class EnumClass<T: Any, TEnumClass:EnumClass<T,TEnumClass>> protected constructor(
     private val clz: Class<T>,
     val identifier: T,

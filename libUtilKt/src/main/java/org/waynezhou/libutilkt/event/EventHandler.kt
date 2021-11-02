@@ -19,7 +19,7 @@ class EventHandler<TEventArgs> {
         holder.removeListener(token)
     }
 
-    fun invoke(e: TEventArgs) {
-        holder.invoke(e)
+    fun invoke(e: TEventArgs, breakAction: ()->Boolean = {false}) {
+        holder.invoke(e, breakAction)
     }
 }

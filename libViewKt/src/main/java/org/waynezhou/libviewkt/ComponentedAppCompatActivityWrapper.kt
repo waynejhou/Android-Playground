@@ -1,16 +1,14 @@
 package org.waynezhou.libviewkt
 
 import android.content.res.Configuration
-import android.content.res.TypedArray
 import android.os.Bundle
 import android.view.KeyEvent
-import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import org.waynezhou.libutilkt.event.BaseEventGroup
 import org.waynezhou.libutilkt.event.EventHolder
 
 @Suppress("unused")
-abstract class AppCompatActivityWrapper : AppCompatActivity() {
+abstract class ComponentedAppCompatActivityWrapper : AppCompatActivity() {
     class EventGroup : BaseEventGroup<EventGroup>() {
         val create = EventHolder<Bundle?>()
         val start = EventHolder<Unit>()
@@ -20,7 +18,7 @@ abstract class AppCompatActivityWrapper : AppCompatActivity() {
         val destroy = EventHolder<Unit>()
         val configurationChanged = EventHolder<Configuration>()
         val keyDown = EventHolder<KeyDownEventArgs>()
-        val backPressed = EventHolder<Unit>()
+        val backPressed = EventHolder<BackPressEventArgs>()
         internal fun getPrivateInvoker() = getInvoker()
     }
 
@@ -31,6 +29,8 @@ abstract class AppCompatActivityWrapper : AppCompatActivity() {
     private val invoker = eventGroup.getPrivateInvoker()
 
     class KeyDownEventArgs(val keyCode: Int, val keyEvent: KeyEvent)
+
+    class BackPressEventArgs(var runSuperBackPress:Boolean = false)
 
     protected abstract fun onInitComponents(savedInstanceState: Bundle?)
 
@@ -76,11 +76,14 @@ abstract class AppCompatActivityWrapper : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        invoker.invoke({ it.backPressed }, Unit)
+        super.onBackPressed()
+        val args = BackPressEventArgs()
+        invoker.invoke({ it.backPressed }, args, {args.runSuperBackPress})
+        if(args.runSuperBackPress) super.onBackPressed()
     }
 }
 
-abstract class ActivityComponent<TActivity : AppCompatActivityWrapper> {
+abstract class ActivityComponent<TActivity : ComponentedAppCompatActivityWrapper> {
     var inited: Boolean = false
         private set
     protected lateinit var host: TActivity
@@ -94,5 +97,5 @@ abstract class ActivityComponent<TActivity : AppCompatActivityWrapper> {
         inited = true
     }
 
-    protected abstract fun onHostCreate(savedInstanceState: Bundle?)
+    protected open fun onHostCreate(savedInstanceState: Bundle?){}
 }

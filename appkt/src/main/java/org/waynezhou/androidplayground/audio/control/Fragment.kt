@@ -39,6 +39,16 @@ class Fragment : androidx.fragment.app.Fragment() {
         }
         throw NullPointerException()
     }
+    fun setAudio(audio: Uri){
+        context?.run{
+            player.reset()
+            player.setDataSource(this, audio)
+            player.prepareAsync()
+            binding.audioControlTitle.text = audio.toString()
+            return
+        }
+        throw NullPointerException()
+    }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

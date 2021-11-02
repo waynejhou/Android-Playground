@@ -41,9 +41,10 @@ abstract class BaseEventGroup<TEventGroup : BaseEventGroup<TEventGroup>> protect
     {
         fun <TEventArgs> invoke(
             selector: (TEventGroup)->EventHolder<TEventArgs>,
-            eventArgs: TEventArgs
+            eventArgs: TEventArgs,
+            breakAction: ()->Boolean = {false}
         ) {
-            selector(group).invoke(eventArgs)
+            selector(group).invoke(eventArgs, breakAction)
         }
     }
     private var invoker: BaseEventGroup<TEventGroup>.Invoker? = null
@@ -83,13 +84,14 @@ class EventHolder<TEventArgs> {
         listeners.removeIf { x: Listener -> x.hashCode() == token.hashcode }
     }
 
-    internal fun invoke(e: TEventArgs) {
+    internal fun invoke(e: TEventArgs, breakAction: ()->Boolean) {
         val removedIdx: MutableList<Int> = mutableListOf()
         for ((idx, listener) in listeners.withIndex()) {
             listener.listener.invoke(e)
             if (listener.isOnce) {
                 removedIdx.add(idx)
             }
+            if(breakAction()) break
         }
         removedIdx.forEach{listeners.removeAt(it)}
     }
