@@ -1,49 +1,55 @@
 package org.waynezhou.androidplayground.main
 
 import android.Manifest
-import android.animation.Animator
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import androidx.annotation.RequiresApi
 import androidx.core.database.getStringOrNull
 import androidx.fragment.app.FragmentManager
 import org.waynezhou.androidplayground.databinding.ActivityMainBinding
 import org.waynezhou.androidplayground.databinding.ItemAudioListBinding
 import org.waynezhou.libutilkt.LogHelper
 import org.waynezhou.libutilkt.PermissionChecker
+import org.waynezhou.libviewkt.ActivityComponent
 import org.waynezhou.libviewkt.AppCompatActivityWrapper
 import org.waynezhou.libviewkt.RecyclerList
 import org.waynezhou.libviewkt.view_transition.*
 import java.text.DecimalFormat
 
-class Activity : AppCompatActivityWrapper() {
-    internal val layout = Layout()
+class Activity : AppCompatActivityWrapper(), IActivityStartup, IActivityLayout {
+    private val startup = Startup()
+    private val layout = Layout()
     private val audioList = AudioList()
-    internal val audioControl = AudioControl()
+    private val audioControl = AudioControl()
     override fun onInitComponents(savedInstanceState: Bundle?) {
+        startup.init(this)
         layout.init(this)
         audioList.init(this)
         audioControl.init(this)
     }
 
+    override val startupReason: StartupReason
+        get() = startup.startupReason
+    override val startupUri: Uri?
+        get() = startup.startupUri
+    override val binding: ActivityMainBinding
+        get() = layout.binding
+
+
 }
 
-class AudioControl{
-    private lateinit var host: Activity
-    private lateinit var layout: Layout
+
+class AudioControl : ActivityComponent<Activity>() {
     private val binding: ActivityMainBinding
-        get() = layout.binding
-    private lateinit var fragmentManager: FragmentManager
-    internal fun init(activity: Activity) {
-        host = activity
-        layout = host.layout
-        fragmentManager = host.supportFragmentManager
-        host.events.on({it.backPressed}, this::onHostBackPressed)
+        get() = host.binding
+    private val fragmentManager: FragmentManager
+        get() = host.supportFragmentManager
+
+    override fun onHostCreate(savedInstanceState: Bundle?) {
+        host.events.on({ it.backPressed }, this::onHostBackPressed)
     }
 
-    private fun onHostBackPressed(u:Unit) {
+    private fun onHostBackPressed(u: Unit) {
         layout.current = layout.layoutAudioList;
         layout.refresh()
     }
@@ -52,7 +58,7 @@ class AudioControl{
     private val fragment1 = org.waynezhou.androidplayground.audio.control.Fragment()
     private val fragment2 = org.waynezhou.androidplayground.audio.control.Fragment()
 
-    fun openAudio(audio: AudioList.Audio){
+    fun openAudio(audio: AudioList.Audio) {
         layout.current = layout.layoutAudioControl
         when (layout.activatedAudioControl) {
             2 -> {
@@ -103,21 +109,13 @@ class AudioControl{
 
 }
 
-class AudioList {
-    private lateinit var host: Activity
-    private lateinit var layout: Layout
+class AudioList : ActivityComponent<Activity>() {
     private val binding: ActivityMainBinding
-        get() = layout.binding
-    private lateinit var fragmentManager: FragmentManager
-    internal fun init(activity: Activity) {
-        host = activity
-        layout = host.layout
-        host.events
-            .on({ it.create }, this::onHostCreate)
-        fragmentManager = host.supportFragmentManager
-    }
+        get() = host.binding
+    private val fragmentManager: FragmentManager
+        get() = host.supportFragmentManager
 
-    private fun onHostCreate(savedInstanceState: Bundle?) {
+    override fun onHostCreate(savedInstanceState: Bundle?) {
         PermissionChecker(host, true, Manifest.permission.READ_EXTERNAL_STORAGE)
             .apply {
                 eventGroup.on({ it.permissionGranted }, this@AudioList::onReadPermissionAllow)
@@ -125,11 +123,13 @@ class AudioList {
     }
 
     lateinit var list: RecyclerList<Audio, ItemAudioListBinding>
-    private val audioListFragment = org.waynezhou.androidplayground.audio.list.Fragment(this).apply {
-        onClick{ view, audio, i ->
-            this@AudioList.host.audioControl.openAudio(audio)
+    private val audioListFragment =
+        org.waynezhou.androidplayground.audio.list.Fragment(this).apply {
+            onClick { view, audio, i ->
+                this@AudioList.host.audioControl.openAudio(audio)
+            }
         }
-    }
+
     private fun onReadPermissionAllow(_list: List<String>) {
         list = RecyclerList<Audio, ItemAudioListBinding>(
             host,
