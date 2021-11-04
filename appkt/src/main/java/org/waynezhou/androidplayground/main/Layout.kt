@@ -13,7 +13,7 @@ import org.waynezhou.libviewkt.ActivityComponent
 import org.waynezhou.libviewkt.view_transition.*
 
 
-val contentViewSet = Layout.ChangedReason("ContentView Set")
+
 
 internal interface IActivityLayout {
     val layouts: Layouts
@@ -71,7 +71,7 @@ class Layout : ActivityComponent<Activity>(), IActivityLayout {
             _currentLayout = value
         }
 
-
+    private val contentViewSet = Layout.ChangedReason("ContentView Set")
     class ChangedReason constructor(statement: String) : EnumClass.Int(statement)
 
 
@@ -161,7 +161,6 @@ class Layouts constructor(
     }.build();
 
     internal val audioControl = LayoutBuilder(this).run {
-        LogHelper.d(activatedAudioControl)
         beginAddStep { binding.mainAudioList }
             .stayAtBottom { toFullScreen() }
             .endAddStep()

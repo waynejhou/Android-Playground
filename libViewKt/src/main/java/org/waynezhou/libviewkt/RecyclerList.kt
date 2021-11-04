@@ -2,48 +2,33 @@ package org.waynezhou.libviewkt
 
 
 import android.annotation.SuppressLint
+import android.view.LayoutInflater
+import android.view.SurfaceHolder
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import org.waynezhou.libutilkt.LogHelper
 import org.waynezhou.libutilkt.reflection.ReflectionException
+import org.waynezhou.libviewkt.LibView.dataContext
 
-class RecyclerList<TItem, TItemViewBinding : ViewBinding>
+class RecyclerList<TItem, TViewHolder: RecyclerView.ViewHolder>
 constructor(
     private val activity: AppCompatActivity,
-    private val itemViewBindingClass: Class<TItemViewBinding>,
+    private val binder: RecyclerListBinder<TItem, TViewHolder>,
     keeper: List<TItem> = listOf(),
-) : RecyclerView.Adapter<RecyclerList<TItem, TItemViewBinding>.ViewHolder>(), MutableList<TItem> {
+) : RecyclerView.Adapter<TViewHolder>(), MutableList<TItem> {
     private val source = keeper.toMutableList()
 
-    private var binder: (binding: TItemViewBinding, source: List<TItem>, position: Int) -> Unit =
-        { _, _, _ -> }
-
-    fun onBind(binder: (binding: TItemViewBinding, source: List<TItem>, position: Int) -> Unit){
-        this.binder = binder
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TViewHolder {
+        return binder.createViewHolder(parent)
     }
 
-    inner class ViewHolder constructor(
-        private val binding: TItemViewBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(source: List<TItem>, position: Int) {
-            binder(binding, source, position)
-        }
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(
-            LibView.inflate(
-                activity.layoutInflater,
-                itemViewBindingClass,
-                parent, false
-            )
-        )
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(this, position)
+    override fun onBindViewHolder(holder: TViewHolder, position: Int) {
+        binder.onBind(holder, source, position);
     }
 
     override fun getItemCount(): Int {
@@ -129,6 +114,44 @@ constructor(
         this
     }
     // endregion
+}
+
+abstract class RecyclerListBinder<TItem, TViewHolder: RecyclerView.ViewHolder>{
 
 
+    abstract fun createViewHolder(parent: ViewGroup): TViewHolder
+    abstract fun onBind(holder: TViewHolder, items:List<TItem>, position: Int)
+}
+
+open class ViewBindingRecyclerListBinder<TItem, TViewBinding: ViewBinding>
+    (private val inflater: LayoutInflater, private val viewBindingClass: Class<TViewBinding>, private val binder: (TViewBinding, List<TItem>, position:Int)->Unit)
+    : RecyclerListBinder<TItem, ViewBindingRecyclerListBinder<TItem, TViewBinding>.ViewHolder>(){
+
+    inner class ViewHolder(var binding: TViewBinding): RecyclerView.ViewHolder(binding.root)
+
+    private val holderMap: MutableMap<Int, ViewHolder> = mutableMapOf()
+
+    override fun createViewHolder(parent: ViewGroup): ViewHolder {
+        return ViewHolder(LibView.inflate(inflater, viewBindingClass, parent, false))
+    }
+
+    override fun onBind(holder:ViewHolder, items: List<TItem>, position: Int) {
+        binder(holder.binding, items, position)
+    }
+}
+
+class ViewDataBindingRecyclerListBinder<TItem, TViewBinding: ViewDataBinding>
+    ( inflater: LayoutInflater, viewBindingClass: Class<TViewBinding>, private val binder: TViewBinding.(holder:RecyclerView.ViewHolder, item:TItem)->Unit)
+    : ViewBindingRecyclerListBinder<TItem, TViewBinding>(inflater, viewBindingClass, { _,_,_ -> }) {
+
+    override fun createViewHolder(parent: ViewGroup): ViewHolder {
+        val holder = super.createViewHolder(parent)
+        holder.binding = DataBindingUtil.bind(holder.itemView)!!
+        return holder
+    }
+
+    override fun onBind(holder:ViewHolder, items: List<TItem>, position: Int) {
+        LogHelper.d(position)
+        binder(holder.binding, holder, items[position])
+    }
 }

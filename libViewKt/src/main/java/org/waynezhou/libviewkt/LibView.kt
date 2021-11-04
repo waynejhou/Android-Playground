@@ -1,6 +1,7 @@
 package org.waynezhou.libviewkt
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import org.waynezhou.libutilkt.reflection.ReflectionException
@@ -31,4 +32,12 @@ object LibView {
             throw ReflectionException(e)
         }
     }
+
+    private val dataContextMap = mutableMapOf<Int, Any?>()
+
+    var View.dataContext: Any?
+        get() = dataContextMap[hashCode()]
+        set(value) {
+            dataContextMap[hashCode()] = value
+        }
 }

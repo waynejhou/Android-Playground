@@ -4,11 +4,12 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import org.waynezhou.androidplayground.audio.model.AudioModel
 import org.waynezhou.androidplayground.databinding.FragmentAudioControlBinding
-import org.waynezhou.androidplayground.main.AudioList
+import org.waynezhou.libutilkt.LogHelper
 
 
-class Fragment : androidx.fragment.app.Fragment() {
+class AudioControlFragment : androidx.fragment.app.Fragment() {
     private lateinit var binding: FragmentAudioControlBinding
 
     private val player = MediaPlayer()
@@ -29,10 +30,10 @@ class Fragment : androidx.fragment.app.Fragment() {
         return binding.root
     }
 
-    fun setAudio(audio: AudioList.Audio){
+    fun setAudio(audio: AudioModel){
         context?.run{
             player.reset()
-            player.setDataSource(this, audio.uri)
+            player.setDataSource(this, audio.contentUri)
             player.prepareAsync()
             binding.audioControlTitle.text = audio.displayName
             return

@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
+import org.waynezhou.libutilkt.LogHelper
 import org.waynezhou.libutilkt.event.BaseEventGroup
 import org.waynezhou.libutilkt.event.EventHolder
 
@@ -28,9 +29,9 @@ abstract class ComponentedAppCompatActivityWrapper : AppCompatActivity() {
 
     private val invoker = eventGroup.getPrivateInvoker()
 
-    class KeyDownEventArgs(val keyCode: Int, val keyEvent: KeyEvent)
+    data class KeyDownEventArgs(val keyCode: Int, val keyEvent: KeyEvent)
 
-    class BackPressEventArgs(var runSuperBackPress:Boolean = false)
+    data class BackPressEventArgs(var runSuperBackPress:Boolean = false)
 
     protected abstract fun onInitComponents(savedInstanceState: Bundle?)
 
@@ -76,9 +77,9 @@ abstract class ComponentedAppCompatActivityWrapper : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
         val args = BackPressEventArgs()
         invoker.invoke({ it.backPressed }, args, {args.runSuperBackPress})
+        LogHelper.d(args)
         if(args.runSuperBackPress) super.onBackPressed()
     }
 }
