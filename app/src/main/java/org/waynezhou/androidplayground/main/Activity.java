@@ -5,9 +5,9 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
-import org.waynezhou.libView.AppCompatActivityWrapper;
+import org.waynezhou.libUtil.activity.ComponentizedActivity;
 
-public final class Activity extends AppCompatActivityWrapper {
+public final class Activity extends ComponentizedActivity {
     // region activity components
     final Layout layout = new Layout();
     final Rotate rotate = new Rotate();

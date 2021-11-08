@@ -9,16 +9,16 @@
             name="audio"
             type="org.waynezhou.androidplayground.audio.model.AudioModel" />
         <variable
-            name="viewHolder"
-            type="androidx.recyclerview.widget.RecyclerView.ViewHolder" />
+            name="adapterPosition"
+            type="Integer" />
         <variable
-            name="fragment"
-            type="org.waynezhou.androidplayground.audio.list.AudioListFragment" />
+            name="eventHolder"
+            type="org.waynezhou.androidplayground.audio.list.IItemAudioListEventHandler" />
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:onClick="@{(view) -> fragment.onItemClick(viewHolder)}">
+        android:layout_height="wrap_content"
+        android:onClick="@{eventHolder::onAudioItemClick}">
         <TextView
             android:id="@+id/audio_item_text_no"
             style="@style/AudioItemTextStyle"
@@ -26,7 +26,7 @@
             app:layout_constraintEnd_toEndOf="@id/audio_item_guideline_v0"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:text=""
+            app:text=""
             />
         <TextView
             android:id="@+id/audio_item_text_title"
@@ -35,7 +35,7 @@
             app:layout_constraintEnd_toEndOf="@id/audio_item_guideline_v3"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="@{audio.Title}"
+            app:text="@{audio.Title}"
             />
 
         <TextView

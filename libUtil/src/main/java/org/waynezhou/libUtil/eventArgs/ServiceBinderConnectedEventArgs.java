@@ -2,6 +2,7 @@ package org.waynezhou.libUtil.eventArgs;
 
 import android.content.ComponentName;
 
+@Deprecated
 public class ServiceBinderConnectedEventArgs<TLocalBinder> {
     public final ComponentName name;
     public final TLocalBinder binder;

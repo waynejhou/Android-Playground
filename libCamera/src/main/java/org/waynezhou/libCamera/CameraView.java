@@ -23,8 +23,8 @@ public class CameraView extends FrameLayout implements TextureView.SurfaceTextur
     
     // region constructor
     public final Camera camera;
-    private Camera.Parameters camParams;
-    private TextureView textureView;
+    private final Camera.Parameters camParams;
+    private final TextureView textureView;
     private SurfaceTexture texture;
     
     public CameraView(Context context, Camera camera) {
@@ -130,7 +130,7 @@ public class CameraView extends FrameLayout implements TextureView.SurfaceTextur
         isPreviewing = false;
     }
     
-    private volatile boolean isSurfaceTextureAvailable = false;
+    private final boolean isSurfaceTextureAvailable = false;
     private Runnable onceSurfaceTextureAvailable = DelegateUtils.NothingRunnable;
     
     public boolean isSurfaceTextureAvailable() {

@@ -1,9 +1,9 @@
 package org.waynezhou.libBluetooth;
 
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 import org.waynezhou.libUtil.event.EventHolder;
 
-public class BtEnablerEventGroup extends EventGroup<BtEnablerEventGroup> {
+public class BtEnablerBaseEventGroup extends BaseEventGroup<BtEnablerBaseEventGroup> {
     private final EventHolder<Object> agree = new EventHolder<>();
     private final EventHolder<Object> disagree = new EventHolder<>();
 

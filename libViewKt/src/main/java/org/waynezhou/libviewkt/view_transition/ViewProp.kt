@@ -90,9 +90,9 @@ class ViewPropStep<TValueHolder : Any> private constructor(
 
     internal fun transpose(): ViewPropStep<TValueHolder> {
         propTransposeMap[propName]?.let {
-            return ViewPropStep(it, valueGetters);
+            return ViewPropStep(it, valueGetters)
         }
-        return this;
+        return this
     }
 
     internal class ViewPropFinalStep(val propName: String, val value: Float)
@@ -138,8 +138,8 @@ class ViewPropFix<TValueHolder : Any> private constructor(
 
     internal fun transpose(): ViewPropFix<TValueHolder> {
         propTransposeMap[propName]?.let {
-            return ViewPropFix(it, getter);
+            return ViewPropFix(it, getter)
         }
-        return this;
+        return this
     }
 }

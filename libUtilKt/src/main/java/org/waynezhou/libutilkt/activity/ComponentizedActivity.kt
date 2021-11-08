@@ -1,4 +1,4 @@
-package org.waynezhou.libutilkt.componentized_activity
+package org.waynezhou.libutilkt.activity
 
 import android.content.res.Configuration
 import android.os.Bundle

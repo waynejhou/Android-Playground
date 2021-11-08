@@ -10,8 +10,7 @@ import java.lang.reflect.InvocationTargetException
 object LibView {
     @Throws(ReflectionException::class)
     @Suppress("UNCHECKED_CAST")
-    fun <TViewBinding : ViewBinding> inflate(
-        layoutInflater: LayoutInflater,
+    fun <TViewBinding : ViewBinding> LayoutInflater.inflate(
         viewBindingType: Class<TViewBinding>,
         container: ViewGroup?,
         attachToParent: Boolean
@@ -23,7 +22,7 @@ object LibView {
                 ViewGroup::class.java,
                 Boolean::class.javaPrimitiveType
             )
-            inflateMethod.invoke(null, layoutInflater, container, attachToParent) as TViewBinding
+            inflateMethod.invoke(null, this, container, attachToParent) as TViewBinding
         } catch (e: IllegalAccessException) {
             throw ReflectionException(e)
         } catch (e: InvocationTargetException) {
@@ -33,11 +32,4 @@ object LibView {
         }
     }
 
-    private val dataContextMap = mutableMapOf<Int, Any?>()
-
-    var View.dataContext: Any?
-        get() = dataContextMap[hashCode()]
-        set(value) {
-            dataContextMap[hashCode()] = value
-        }
 }

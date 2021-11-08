@@ -1,25 +1,28 @@
-package org.waynezhou.libUtil.schedule.thread;
+package org.waynezhou.libUtil.schedule;
 
 import android.os.Handler;
 
+import androidx.annotation.NonNull;
+
 public class TimeoutHandler {
-    private final Runnable interruptAction;
-    TimeoutHandler(Thread thread){
-        interruptAction = ()->{
+    @NonNull
+    private final Runnable cancelAction;
+    TimeoutHandler(@NonNull Thread thread){
+        cancelAction = ()->{
             if(!thread.isInterrupted())
                 thread.interrupt();
         };
     }
-    public TimeoutHandler(
-      Handler handler,
-      Runnable runnable
+    TimeoutHandler(
+      @NonNull Handler handler,
+      @NonNull Runnable runnable
     ){
-        interruptAction = ()->{
+        cancelAction = ()->{
             handler.removeCallbacks(runnable);
         };
     }
-    public void interrupt(){
-        interruptAction.run();
+    public void cancel(){
+        cancelAction.run();
     }
 }
 

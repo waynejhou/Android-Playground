@@ -3,29 +3,29 @@ package org.waynezhou.androidplayground.main;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 
 import org.waynezhou.androidplayground.service.BleControllerService;
 import org.waynezhou.libBluetooth.BtGuarantor;
-import org.waynezhou.libUtil.BroadcastReceiverRegister;
-import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.SensorToggle;
+import org.waynezhou.libUtil.standard.StandardKt;
+import org.waynezhou.libUtil.register.BroadcastReceiverRegister;
+import org.waynezhou.libUtil.log.LogHelper;
 
 public class BleControl {
     private Activity host;
     
     void init(Activity activity) {
         this.host = activity;
-        this.host.getEventGroup().on(g->g.create, this::onHostCreate);
-        this.host.getEventGroup().on(g->g.destroy, this::onHostDestroy);
+        this.host.getEvents().on(g->g.create, this::onHostCreate);
+        this.host.getEvents().on(g->g.destroy, this::onHostDestroy);
     }
     
     private void onHostDestroy(Void unused) {
         host.stopService(new Intent(host, BleControllerService.class));
     }
     
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
+    private BroadcastReceiverRegister broadcastReceiverRegister;
     
     private void onHostCreate(Bundle bundle) {
         BtGuarantor btGuarantor = new BtGuarantor(host);
@@ -39,11 +39,11 @@ public class BleControl {
           });
         btGuarantor.fire();
     
-        BroadcastReceiverRegister broadcastReceiverRegister = new BroadcastReceiverRegister();
-        IntentFilter filter = new IntentFilter(BleControllerService.BROADCAST_GOT_CMD);
-        broadcastReceiverRegister.setBroadReceive((ctx, intent) -> {
-            LogHelper.d(intent.getStringExtra(BleControllerService.BROADCAST_GOT_CMD_EXTRA_DATA_NAME));
-        });
-        host.registerReceiver(broadcastReceiverRegister, filter);
+        broadcastReceiverRegister = StandardKt.apply(
+          new BroadcastReceiverRegister(host, new IntentFilter(BleControllerService.BROADCAST_GOT_CMD)), it->{
+              it.getEvents().on(g->g.result, e->{
+                  LogHelper.d(e.intent.getStringExtra(BleControllerService.BROADCAST_GOT_CMD_EXTRA_DATA_NAME));
+              });
+          });
     }
 }

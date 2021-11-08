@@ -9,7 +9,6 @@ import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 
 data class AudioModel(
-    //val _count:String? = null,
     val _id: Long,
     val albumId: Long,
     val artistId: Long,
@@ -47,30 +46,6 @@ data class AudioModel(
 ) {
     companion object {
         val projections = arrayOf(
-            //ALBUM,
-            //ALBUM_ARTIST,
-            //ARTIST,
-            //AUTHOR,
-            //BITRATE,
-            //CAPTURE_FRAMERATE,
-            //CD_TRACK_NUMBER,
-            //COMPILATION,
-            //COMPOSER,
-            //DISC_NUMBER,
-            //GENERATION_ADDED,
-            //GENERATION_MODIFIED,
-            //GENRE,
-            //GENRE_ID,
-            //IS_DOWNLOAD,
-            //IS_DRM,
-            //IS_FAVORITE,
-            //IS_TRASHED,
-            //NUM_TRACKS,
-            //RESOLUTION,
-            //TITLE_RESOURCE_URI,
-            //WRITER,
-            //XMP,
-            //_COUNT,
             _ID,
             ALBUM_ID,
             ARTIST_ID,
@@ -146,8 +121,6 @@ data class AudioModel(
     )
 }
 
-class AlbumModel {
+class AlbumModel
 
-}
-
-class Genre()
+class Genre

@@ -1,6 +1,6 @@
 package org.waynezhou.androidplayground.main;
 
-import org.waynezhou.libUtil.EnumClass;
+import org.waynezhou.libUtil.enumclass.EnumClass;
 
 final class FocusPosition extends EnumClass.Int {
     static final FocusPosition FOCUS_TOP = new FocusPosition(0, "Focus Top");

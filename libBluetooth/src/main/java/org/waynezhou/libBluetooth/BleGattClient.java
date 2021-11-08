@@ -7,13 +7,15 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientCharacteristicChangedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientCharacteristicReadEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientCharacteristicWriteEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientConnectionStateChangeEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientDescriptorReadEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientDescriptorWriteEventArgs;
-import org.waynezhou.libBluetooth.eventGroup.BleGattClientEventGroup;
+import org.waynezhou.libBluetooth.eventGroup.BleGattClientBaseEventGroup;
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientMtuChangedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientPhyReadEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientPhyUpdateEventArgs;
@@ -21,7 +23,7 @@ import org.waynezhou.libBluetooth.eventArgs.BleGattClientReadRemoteRssiEventArgs
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientReliableWriteCompletedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattClientServicesDiscoveredEventArgs;
 import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -29,16 +31,17 @@ import java.util.Map;
 
 public class BleGattClient {
 
-    private final _BleGattClientEventGroup eventGroup = new _BleGattClientEventGroup();
-    private final EventGroup<BleGattClientEventGroup>.Invoker invoker;
+    private final _BleGattClientBaseEventGroup eventGroup = new _BleGattClientBaseEventGroup();
+    private final BaseEventGroup<BleGattClientBaseEventGroup>.Invoker invoker;
 
-    private static class _BleGattClientEventGroup extends BleGattClientEventGroup {
-        public EventGroup<BleGattClientEventGroup>.Invoker getInvoker() {
+    private static class _BleGattClientBaseEventGroup extends BleGattClientBaseEventGroup {
+        @NonNull
+        public BaseEventGroup<BleGattClientBaseEventGroup>.Invoker getInvoker() {
             return super.getInvoker();
         }
     }
 
-    public BleGattClientEventGroup getEventGroup() {
+    public BleGattClientBaseEventGroup getEventGroup() {
         return eventGroup;
     }
     

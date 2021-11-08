@@ -1,4 +1,4 @@
-package org.waynezhou.libutilkt.log_helper
+package org.waynezhou.libutilkt.log
 
 import android.util.Log
 import java.util.*

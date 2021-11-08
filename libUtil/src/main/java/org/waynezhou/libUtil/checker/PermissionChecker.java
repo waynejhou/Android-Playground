@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil.permission_checker;
+package org.waynezhou.libUtil.checker;
 
 import android.content.pm.PackageManager;
 

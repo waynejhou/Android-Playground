@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil;
+package org.waynezhou.libUtil.linq;
 
 public class LinqInt extends Linq<Integer> {
     private static Integer[] convert(int[] arr) {

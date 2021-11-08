@@ -1,5 +1,6 @@
 package org.waynezhou.libUtil.eventArgs;
 
+@Deprecated
 public class RuntimeExecResultEventArgs {
     public final String stdout;
     public final String stderr;

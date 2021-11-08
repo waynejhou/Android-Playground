@@ -1,4 +1,4 @@
-package org.waynezhou.libView.view_transition;
+package org.waynezhou.libView.transition;
 
 import android.animation.TimeInterpolator;
 import android.view.animation.AccelerateInterpolator;

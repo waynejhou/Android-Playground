@@ -2,10 +2,8 @@ package org.waynezhou.androidplayground.main
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
-import org.waynezhou.libutilkt.EnumClass
-import org.waynezhou.libutilkt.LogHelper
-import org.waynezhou.libviewkt.ActivityComponent
+import org.waynezhou.libutilkt.enum.EnumClass
+import org.waynezhou.libutilkt.activity.ActivityComponent
 
 internal interface IActivityStartup{
     val startupReasons: StartupReasons
@@ -13,12 +11,11 @@ internal interface IActivityStartup{
     val startupUri: Uri?
 }
 
-class Startup : ActivityComponent<Activity>(), IActivityStartup {
+class Startup : ActivityComponent<MainActivity>(), IActivityStartup {
     private val intent: Intent
         get() = host.intent
     override val startupReasons = StartupReasons()
     override fun onInit() {
-        LogHelper.d(intent)
         host.events.on({it.start}, this::onHostStart)
         startupReason = when(intent.action){
             Intent.ACTION_MAIN -> startupReasons.fromLauncher

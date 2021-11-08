@@ -7,9 +7,8 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.core.animation.addListener
 import org.waynezhou.androidplayground.databinding.ActivityMainBinding
-import org.waynezhou.libutilkt.EnumClass
-import org.waynezhou.libutilkt.LogHelper
-import org.waynezhou.libviewkt.ActivityComponent
+import org.waynezhou.libutilkt.enum.EnumClass
+import org.waynezhou.libutilkt.activity.ActivityComponent
 import org.waynezhou.libviewkt.view_transition.*
 
 
@@ -27,7 +26,7 @@ internal interface IActivityLayout {
     var currentLayout: ViewTransition<Layouts>
 }
 
-class Layout : ActivityComponent<Activity>(), IActivityLayout {
+class Layout : ActivityComponent<MainActivity>(), IActivityLayout {
     override lateinit var layouts: Layouts
 
     override lateinit var binding: ActivityMainBinding
@@ -39,7 +38,7 @@ class Layout : ActivityComponent<Activity>(), IActivityLayout {
         binding.root.viewTreeObserver.run {
             addOnGlobalLayoutListener(this@Layout::onGlobalLayout)
         }
-        setChangedReason(contentViewSet);
+        setChangedReason(contentViewSet)
         host.setContentView(binding.root)
     }
 
@@ -51,7 +50,6 @@ class Layout : ActivityComponent<Activity>(), IActivityLayout {
     private fun onGlobalLayout() {
         try {
             changedReason?.let { cReason ->
-                LogHelper.i(cReason)
                 if (!layouts.isRootBoundChanged) return
                 layouts.measureLayout()
                 if (cReason == contentViewSet) {
@@ -102,7 +100,7 @@ class Layouts constructor(
         rootHei = binding.root.height.toFloat()
     }
 
-    private var activatedAudioControl = 0;
+    private var activatedAudioControl = 0
     private var rootWid = -1f
     private var rootHei = -1f
 
@@ -158,7 +156,7 @@ class Layouts constructor(
         beginAddStep { binding.mainAudioControl }
             .sinkToBottom { toHideBottom() }
             .endAddStep()
-    }.build();
+    }.build()
 
     internal val audioControl = LayoutBuilder(this).run {
         beginAddStep { binding.mainAudioList }
@@ -167,5 +165,5 @@ class Layouts constructor(
         beginAddStep { binding.mainAudioControl }
             .stayAtTop { toFullScreen() }
             .endAddStep()
-    }.build();
+    }.build()
 }

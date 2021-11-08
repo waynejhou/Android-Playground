@@ -1,6 +1,6 @@
 package org.waynezhou.androidplayground.main;
 
-import org.waynezhou.libUtil.EnumClass;
+import org.waynezhou.libUtil.enumclass.EnumClass;
 
 final class LayoutChangedReason extends EnumClass.Int {
     public static final LayoutChangedReason ROTATION_REQUESTED = new LayoutChangedReason("Rotation Requested");

@@ -1,9 +1,10 @@
-package org.waynezhou.libView;
+package org.waynezhou.libUtil.activity;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.KeyEvent;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,18 +12,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.waynezhou.libUtil.event.BaseEventGroup;
 import org.waynezhou.libUtil.event.EventHolder;
 
-public abstract class AppCompatActivityWrapper extends AppCompatActivity {
+public abstract class ComponentizedActivity<TActivity extends ComponentizedActivity<TActivity>> extends AppCompatActivity {
     public static class EventGroup extends BaseEventGroup<EventGroup> {
+        @NonNull
         public final EventHolder<Bundle> create = new EventHolder<>();
+        @NonNull
         public final EventHolder<Void> start = new EventHolder<>();
+        @NonNull
         public final EventHolder<Void> resume = new EventHolder<>();
+        @NonNull
         public final EventHolder<Void> pause = new EventHolder<>();
+        @NonNull
         public final EventHolder<Void> stop = new EventHolder<>();
+        @NonNull
         public final EventHolder<Void> destroy = new EventHolder<>();
+        @NonNull
         public final EventHolder<Configuration> configurationChanged = new EventHolder<>();
+        @NonNull
         public final EventHolder<KeyDownEventArgs> keyDown = new EventHolder<>();
         @NonNull
-        public org.waynezhou.libUtil.event.BaseEventGroup<EventGroup>.Invoker getInvoker() {
+        public BaseEventGroup<EventGroup>.Invoker getInvoker() {
             return super.getInvoker();
         }
     }
@@ -35,21 +44,20 @@ public abstract class AppCompatActivityWrapper extends AppCompatActivity {
     
     private final BaseEventGroup<EventGroup>.Invoker invoker;
     
-    public AppCompatActivityWrapper() {
+    public ComponentizedActivity() {
         invoker = eventGroup.getInvoker();
     }
     
-    public static class KeyDownEventArgs {
-        public final int keyCode;
-        public final KeyEvent keyEvent;
-        
-        public KeyDownEventArgs(int keyCode, KeyEvent keyEvent) {
-            this.keyCode = keyCode;
-            this.keyEvent = keyEvent;
+    protected abstract ActivityComponent<TActivity>[] getComponents();
+    
+    @SuppressWarnings("unchecked")
+    @CallSuper
+    protected void onInitComponents(@Nullable Bundle savedInstanceState){
+        for(ActivityComponent<TActivity> component : getComponents()){
+            component.init((TActivity) this);
         }
     }
     
-    protected abstract void onInitComponents(@Nullable Bundle savedInstanceState);
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +69,9 @@ public abstract class AppCompatActivityWrapper extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         invoker.invoke(g -> g.destroy, null);
+        for(ActivityComponent<TActivity> component : getComponents()){
+            component.release();
+        }
     }
     
     @Override
@@ -100,3 +111,4 @@ public abstract class AppCompatActivityWrapper extends AppCompatActivity {
     }
     
 }
+

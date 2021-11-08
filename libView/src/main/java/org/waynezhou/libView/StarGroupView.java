@@ -54,7 +54,7 @@ public class StarGroupView extends FrameLayout {
     private int childCount;
     private float averageAngle;
     private int closeIndex;
-    private float startSweepAngle = 0;
+    private final float startSweepAngle = 0;
     private final ValueAnimator velocityAnimator = new ValueAnimator();
     private final ValueAnimator selectAnimator = new ValueAnimator();
     private final Interpolator interpolator = new DecelerateInterpolator();
@@ -115,7 +115,7 @@ public class StarGroupView extends FrameLayout {
 
     private float sweepAngle = 0f;
     private boolean isCompensated;
-    private VelocityTracker velocityTracker = VelocityTracker.obtain();
+    private final VelocityTracker velocityTracker = VelocityTracker.obtain();
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {

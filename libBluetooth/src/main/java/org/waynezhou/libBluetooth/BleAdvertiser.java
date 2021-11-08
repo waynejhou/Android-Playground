@@ -6,22 +6,25 @@ import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 
-import org.waynezhou.libBluetooth.eventGroup.BleAdvertiserEventGroup;
+import androidx.annotation.NonNull;
+
+import org.waynezhou.libBluetooth.eventGroup.BleAdvertiserBaseEventGroup;
 import org.waynezhou.libBluetooth.eventArgs.BleAdvertiserStartFailureEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleAdvertiserStartSuccessEventArgs;
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 
 public class BleAdvertiser {
 
-    private final _BleAdvertiserEventGroup eventGroup = new _BleAdvertiserEventGroup();
+    private final _BleAdvertiserBaseEventGroup eventGroup = new _BleAdvertiserBaseEventGroup();
 
-    private static class _BleAdvertiserEventGroup extends BleAdvertiserEventGroup {
-        public EventGroup<BleAdvertiserEventGroup>.Invoker getInvoker() {
+    private static class _BleAdvertiserBaseEventGroup extends BleAdvertiserBaseEventGroup {
+        @NonNull
+        public BaseEventGroup<BleAdvertiserBaseEventGroup>.Invoker getInvoker() {
             return super.getInvoker();
         }
     }
 
-    public BleAdvertiserEventGroup getEventGroup() {
+    public BleAdvertiserBaseEventGroup getEventGroup() {
         return eventGroup;
     }
 

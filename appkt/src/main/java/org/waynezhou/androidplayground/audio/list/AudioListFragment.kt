@@ -1,44 +1,45 @@
 package org.waynezhou.androidplayground.audio.list
 
 import android.database.Cursor
-import android.graphics.Point
-import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GestureDetectorCompat
-import androidx.core.view.children
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import org.waynezhou.androidplayground.R
 import org.waynezhou.androidplayground.audio.model.AudioModel
 import org.waynezhou.androidplayground.databinding.FragmentAudioListBinding
 import org.waynezhou.androidplayground.databinding.ItemAudioListBinding
 import org.waynezhou.libviewkt.RecyclerList
-import org.waynezhou.libutilkt.LogHelper
 import org.waynezhou.libviewkt.RecyclerListBinder
 import org.waynezhou.libviewkt.ViewBindingRecyclerListBinder
 import org.waynezhou.libviewkt.ViewDataBindingRecyclerListBinder
 import java.text.DecimalFormat
 
+typealias AudioModelViewHolder = ViewBindingRecyclerListBinder<AudioModel, ItemAudioListBinding>.ViewHolder
+typealias AudioModelList = RecyclerList<AudioModel, AudioModelViewHolder>
+typealias AudioModelListBinder = RecyclerListBinder<AudioModel, AudioModelViewHolder>
+typealias AudioModelListDataBinder = ViewDataBindingRecyclerListBinder<AudioModel, ItemAudioListBinding>
+
 class AudioListFragment : androidx.fragment.app.Fragment() {
     private lateinit var activity: AppCompatActivity
     private lateinit var binding: FragmentAudioListBinding
     private var onClickListener: (View, AudioModel, Int)->Unit = {_,_,_->}
-    fun onClick(listener: (View, AudioModel, Int)->Unit){
+    fun onAudioItemClick(listener: (View, AudioModel, Int)->Unit){
         onClickListener = listener
     }
-    fun onItemClick(holder:RecyclerView.ViewHolder){
-        val idx  = holder.adapterPosition
-        val audio = list[idx]
-        LogHelper.d("$idx $audio")
-        onClickListener(holder.itemView, audio, idx)
+
+    private val audioItemEventHandler = object : IItemAudioListEventHandler{
+        override fun onAudioItemClick(view: View) {
+            val vh = binding.audioList.findContainingViewHolder(view)!!
+            val idx  = vh.adapterPosition
+            val audio = list[idx]
+            onClickListener(view, audio, idx)
+        }
     }
 
-    internal lateinit var list : RecyclerList<AudioModel, ViewBindingRecyclerListBinder<AudioModel, ItemAudioListBinding>.ViewHolder>
-    private lateinit var listBinder: RecyclerListBinder<AudioModel, ViewBindingRecyclerListBinder<AudioModel, ItemAudioListBinding>.ViewHolder>
+    internal lateinit var list : AudioModelList
+    private lateinit var listBinder: AudioModelListBinder
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activity = requireActivity() as AppCompatActivity
@@ -50,18 +51,14 @@ class AudioListFragment : androidx.fragment.app.Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentAudioListBinding.inflate(inflater, container, false)
-        listBinder = /*ViewBindingRecyclerListBinder(inflater, ItemAudioListBinding::class.java) { binding, items, pos ->
-            val audio = items[pos]
-            binding.audioItemTextNo.text = audio.displayId
-            binding.audioItemTextTitle.text = audio.displayName
-            binding.audioItemTextDuration.text = formatAudioDuration(audio.duration)
-        }*/
-            ViewDataBindingRecyclerListBinder(inflater, ItemAudioListBinding::class.java){ holder, item ->
-                LogHelper.d(item.title)
-                audio = item
-                viewHolder = holder
-                fragment = this@AudioListFragment
-            }
+        listBinder = AudioModelListDataBinder(inflater, ItemAudioListBinding::class.java).apply{
+                onCreate {
+                    eventHolder = audioItemEventHandler
+                    executePendingBindings()
+                }
+                onBind { item, holder -> audio = item ; adapterPosition = holder.adapterPosition}
+        }
+
 
         binding.audioList.run {
 
@@ -101,9 +98,9 @@ class AudioListFragment : androidx.fragment.app.Fragment() {
     companion object{
         private val audioDurationNumFormat = DecimalFormat("00")
         private fun formatAudioDuration(duration: Long): String {
-            val h = audioDurationNumFormat.format(duration / 3600000);
-            val m = audioDurationNumFormat.format(duration / 60000);
-            val s = audioDurationNumFormat.format(duration / 1000 % 60);
+            val h = audioDurationNumFormat.format(duration / 3600000)
+            val m = audioDurationNumFormat.format(duration / 60000)
+            val s = audioDurationNumFormat.format(duration / 1000 % 60)
             return "$h:$m:$s"
         }
     }

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -13,8 +12,8 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 
 import org.waynezhou.libUtil.DelegateUtils;
-import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.ThreadUtils;
+import org.waynezhou.libUtil.schedule.IntervalHandler;
+import org.waynezhou.libUtil.schedule.ThreadSchedule;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -208,12 +207,12 @@ public class MediaView extends FrameLayout implements TextureView.SurfaceTexture
     }
     
     private Section section;
-    private Thread sectionTrackingThd;
+    private IntervalHandler sectionTrackingHandler;
     
     private void disposeTrackingThd() {
-        if (sectionTrackingThd != null) {
-            sectionTrackingThd.interrupt();
-            sectionTrackingThd = null;
+        if (sectionTrackingHandler != null) {
+            sectionTrackingHandler.shutdown();
+            sectionTrackingHandler = null;
         }
     }
     
@@ -225,7 +224,7 @@ public class MediaView extends FrameLayout implements TextureView.SurfaceTexture
         } else {
             this.section = section;
             player.seekTo(section.start_msec);
-            sectionTrackingThd = ThreadUtils.interval(33, () -> {
+            sectionTrackingHandler = ThreadSchedule.interval(33, () -> {
                 if (Math.abs(player.getCurrentPosition() - this.section.end_msec) < 10) {
                     player.seekTo(this.section.start_msec);
                 }

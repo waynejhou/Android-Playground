@@ -9,6 +9,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import org.waynezhou.libviewkt.LibView.inflate
 
 class RecyclerList<TItem, TViewHolder: RecyclerView.ViewHolder>
 constructor(
@@ -23,11 +24,11 @@ constructor(
     }
 
     override fun onBindViewHolder(holder: TViewHolder, position: Int) {
-        binder.onBind(holder, source, position);
+        binder.onBind(holder, source, position)
     }
 
     override fun getItemCount(): Int {
-        return size;
+        return size
     }
 
     //region list readonly implement
@@ -122,10 +123,8 @@ open class ViewBindingRecyclerListBinder<TItem, TViewBinding: ViewBinding>
 
     inner class ViewHolder(var binding: TViewBinding): RecyclerView.ViewHolder(binding.root)
 
-    private val holderMap: MutableMap<Int, ViewHolder> = mutableMapOf()
-
     override fun createViewHolder(parent: ViewGroup): ViewHolder {
-        return ViewHolder(LibView.inflate(inflater, viewBindingClass, parent, false))
+        return ViewHolder(inflater.inflate(viewBindingClass, parent, false))
     }
 
     override fun onBind(holder: ViewHolder, items: List<TItem>, position: Int) {
@@ -133,7 +132,7 @@ open class ViewBindingRecyclerListBinder<TItem, TViewBinding: ViewBinding>
     }
 }
 
-class ViewDataBindingRecyclerListBinder<TItem, TViewBinding: ViewDataBinding>
+open class ViewDataBindingRecyclerListBinder<TItem, TViewBinding: ViewDataBinding>
     ( inflater: LayoutInflater, viewBindingClass: Class<TViewBinding>)
     : ViewBindingRecyclerListBinder<TItem, TViewBinding>(inflater, viewBindingClass, { _, _, _ -> }) {
 
@@ -149,7 +148,6 @@ class ViewDataBindingRecyclerListBinder<TItem, TViewBinding: ViewDataBinding>
     fun onCreate(listener:  (TViewBinding.()->Unit)){
         createListener = listener
     }
-
 
     private var bindingListener: (TViewBinding.(item:TItem, holder: ViewHolder)->Unit) = { _, _ ->}
 

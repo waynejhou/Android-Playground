@@ -1,6 +1,6 @@
 package org.waynezhou.libBluetooth;
 
-import static org.waynezhou.libUtil.StandardKt.checkNullRet;
+import static org.waynezhou.libUtil.standard.StandardKt.checkNullRet;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -11,12 +11,14 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerCharacteristicReadRequestEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerCharacteristicWriteRequestEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerConnectionStateChangeEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerDescriptorReadRequestEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerDescriptorWriteRequestEventArgs;
-import org.waynezhou.libBluetooth.eventGroup.BleGattServerEventGroup;
+import org.waynezhou.libBluetooth.eventGroup.BleGattServerBaseEventGroup;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerExecuteWriteEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerMtuChangedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerNotificationSentEventArgs;
@@ -24,22 +26,23 @@ import org.waynezhou.libBluetooth.eventArgs.BleGattServerPhyReadEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerPhyUpdateEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerServiceAddedEventArgs;
 import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 
 import java.util.List;
 
 public class BleGattServer {
 
-    private final _BleGattServerEventGroup eventGroup = new _BleGattServerEventGroup();
-    private final EventGroup<BleGattServerEventGroup>.Invoker invoker;
+    private final _BleGattServerBaseEventGroup eventGroup = new _BleGattServerBaseEventGroup();
+    private final BaseEventGroup<BleGattServerBaseEventGroup>.Invoker invoker;
 
-    private static class _BleGattServerEventGroup extends BleGattServerEventGroup {
-        public EventGroup<BleGattServerEventGroup>.Invoker getInvoker() {
+    private static class _BleGattServerBaseEventGroup extends BleGattServerBaseEventGroup {
+        @NonNull
+        public BaseEventGroup<BleGattServerBaseEventGroup>.Invoker getInvoker() {
             return super.getInvoker();
         }
     }
 
-    public BleGattServerEventGroup getEventGroup() {
+    public BleGattServerBaseEventGroup getEventGroup() {
         return eventGroup;
     }
 
@@ -53,7 +56,7 @@ public class BleGattServer {
         this.services = services;
     }
 
-    public BleGattServerHandler startOn(BluetoothManager btManager, BleGattServerEventGroup eventPack, Context context) {
+    public BleGattServerHandler startOn(BluetoothManager btManager, BleGattServerBaseEventGroup eventPack, Context context) {
         LogHelper.d("lib open gatt server");
         BluetoothGattServer gattServer = btManager.openGattServer(context, callback);
         callback.setGattServer(gattServer);

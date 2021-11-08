@@ -1,11 +1,8 @@
 package org.waynezhou.androidplayground.main;
 
 import static android.content.Context.WINDOW_SERVICE;
-import static org.waynezhou.androidplayground.main.ControlSignal.CTRL_ROTATE;
 
 import android.Manifest;
-import android.content.res.Configuration;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.Surface;
@@ -14,10 +11,9 @@ import android.view.WindowManager;
 import androidx.fragment.app.FragmentManager;
 
 import org.waynezhou.androidplayground.fragment.ObjectDetectionFragment;
-import org.waynezhou.libCamera.CameraView;
 import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.PermissionChecker;
-import org.waynezhou.libUtil.StandardKt;
+import org.waynezhou.libUtil.standard.StandardKt;
+import org.waynezhou.libUtil.checker.PermissionChecker;
 
 public class ObjdetTop {
     private Activity host;
@@ -29,7 +25,7 @@ public class ObjdetTop {
         this.host = activity;
         this.layout = host.layout;
         this.rotate = host.rotate;
-        host.getEventGroup().on(g->g.create, this::onHostCreate);
+        host.getEvents().on(g->g.create, this::onHostCreate);
         
         WindowManager windowManager = (WindowManager) host.getSystemService(WINDOW_SERVICE);
         windowDisplay = windowManager.getDefaultDisplay();
@@ -71,7 +67,7 @@ public class ObjdetTop {
     private ObjectDetectionFragment objdetFragment;
     public void create(){
         StandardKt.apply(new PermissionChecker(host, true, Manifest.permission.CAMERA), it->{
-            it.getEventGroup()
+            it.getEvents()
               .on(g->g.permissionGranted, e->{
                   objdetFragment = new ObjectDetectionFragment(getCameraViewRotation());
                   fragmentManager.beginTransaction()

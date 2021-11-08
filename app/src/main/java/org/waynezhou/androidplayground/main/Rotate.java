@@ -15,13 +15,12 @@ import android.os.Bundle;
 
 import androidx.core.util.Consumer;
 
-import org.waynezhou.libUtil.DelegateUtils;
-import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.SensorToggle;
 import org.waynezhou.libUtil.event.EventHandler;
 import org.waynezhou.libUtil.event.EventHolder;
 import org.waynezhou.libUtil.event.EventListener;
 import org.waynezhou.libUtil.eventArgs.SensorChangedEventArgs;
+import org.waynezhou.libUtil.log.LogHelper;
+import org.waynezhou.libUtil.toggle.SensorToggle;
 
 final class Rotate {
     private Activity host;
@@ -38,7 +37,7 @@ final class Rotate {
         orientation = host.getResources().getConfiguration().orientation;
         this.autoRotate = autoRotate;
         this.autoRotate.init(this);
-        host.getEventGroup()
+        host.getEvents()
           .on(h->h.create, this::onHostCreate);
     }
     
@@ -50,7 +49,7 @@ final class Rotate {
     // region create
     private void createGSensor(){
         gSensor = new SensorToggle(host, Sensor.TYPE_ACCELEROMETER, SensorManager.SENSOR_DELAY_UI);
-        gSensor.getEventGroup().on(e -> e.changed, this::onGSensorValueChanged);
+        gSensor.getEvents().on(e -> e.changed, this::onGSensorValueChanged);
     }
 
     // endregion
@@ -182,7 +181,7 @@ final class Rotate {
         final static AutoRotationSource None = new AutoRotationSource($->{});
         final static AutoRotationSource GSensor = new AutoRotationSource(Rotate::createGSensor);
         final static AutoRotationSource System = new AutoRotationSource(rotate->{
-            rotate.host.getEventGroup().on(g->g.configurationChanged, newConfig->{
+            rotate.host.getEvents().on(g->g.configurationChanged, newConfig->{
                 if(rotate.isOrientationChanged(newConfig)){
                     rotate.control.sendSignal(CTRL_ROTATE);
                 }

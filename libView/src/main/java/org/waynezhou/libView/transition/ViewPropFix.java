@@ -1,4 +1,4 @@
-package org.waynezhou.libView.view_transition;
+package org.waynezhou.libView.transition;
 
 public class ViewPropFix<TValueHolder> {
 

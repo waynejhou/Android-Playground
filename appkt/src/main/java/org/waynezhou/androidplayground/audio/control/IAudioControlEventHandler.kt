@@ -1,2 +1,3 @@
-package org.waynezhou.androidplayground.audio.control 
+package org.waynezhou.androidplayground.audio.control
 
+interface IAudioControlEventHandler

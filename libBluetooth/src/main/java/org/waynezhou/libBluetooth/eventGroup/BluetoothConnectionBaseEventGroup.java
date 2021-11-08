@@ -8,10 +8,10 @@ import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionErrorEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionGotMessageEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionStartedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionWaitingAcceptedEventArgs;
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 import org.waynezhou.libUtil.event.EventHolder;
 
-public class BluetoothConnectionEventGroup extends EventGroup<BluetoothConnectionEventGroup> {
+public class BluetoothConnectionBaseEventGroup extends BaseEventGroup<BluetoothConnectionBaseEventGroup> {
 
     public final EventHolder<BluetoothConnectionAcceptedEventArgs> accepted = new EventHolder<>();
     public final EventHolder<BluetoothConnectionWaitingAcceptedEventArgs> waitingAccepted = new EventHolder<>();

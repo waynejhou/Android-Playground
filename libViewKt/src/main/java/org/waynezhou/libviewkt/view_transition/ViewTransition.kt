@@ -41,7 +41,7 @@ class ViewTransition<TValueHolder : Any> private constructor(
 
         /** Build new [ViewTransition] instance. */
         fun build(): ViewTransition<TValueHolder> {
-            return ViewTransition(valHolder, viewSteps.toList(), conditionalViewSteps.toList());
+            return ViewTransition(valHolder, viewSteps.toList(), conditionalViewSteps.toList())
         }
     }
 

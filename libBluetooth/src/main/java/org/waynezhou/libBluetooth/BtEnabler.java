@@ -6,20 +6,21 @@ import android.bluetooth.BluetoothAdapter;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.waynezhou.libUtil.ActivityResultRegister;
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.register.ActivityResultRegister;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 
 public final class BtEnabler {
-    private final _BtEnablerEventGroup eventGroup = new _BtEnablerEventGroup();
-    private final EventGroup<BtEnablerEventGroup>.Invoker invoker;
+    private final _BtEnablerBaseEventGroup eventGroup = new _BtEnablerBaseEventGroup();
+    private final BaseEventGroup<BtEnablerBaseEventGroup>.Invoker invoker;
 
-    private static class _BtEnablerEventGroup extends BtEnablerEventGroup {
-        public EventGroup<BtEnablerEventGroup>.Invoker getInvoker() {
+    private static class _BtEnablerBaseEventGroup extends BtEnablerBaseEventGroup {
+        @NonNull
+        public BaseEventGroup<BtEnablerBaseEventGroup>.Invoker getInvoker() {
             return super.getInvoker();
         }
     }
 
-    public BtEnablerEventGroup getEventGroup() {
+    public BtEnablerBaseEventGroup getEventGroup() {
         return eventGroup;
     }
 
@@ -34,12 +35,12 @@ public final class BtEnabler {
     }
 
     public void fire() {
-        register.getEventGroup()
+        register.getEvents()
                 .on(g->g.result, e -> {
                     if (e.resultCode == Activity.RESULT_OK) {
-                        invoker.invoke(BtEnablerEventGroup::getAgree, null);
+                        invoker.invoke(BtEnablerBaseEventGroup::getAgree, null);
                     } else {
-                        invoker.invoke(BtEnablerEventGroup::getDisagree, null);
+                        invoker.invoke(BtEnablerBaseEventGroup::getDisagree, null);
                     }
                 });
         register.fire();

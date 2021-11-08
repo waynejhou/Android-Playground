@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 
 import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.PermissionChecker;
+import org.waynezhou.libUtil.checker.PermissionChecker;
 import org.waynezhou.libView.MediaView;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ final class MediaTop {
     
     void init(Activity activity) {
         this.host = activity;
-        this.host.getEventGroup().on(g -> g.create, this::onHostCreate);
+        this.host.getEvents().on(g -> g.create, this::onHostCreate);
         this.layout = host.layout;
         this.control = host.control;
         this.focusView = host.focusView;
@@ -30,14 +30,15 @@ final class MediaTop {
     private void onHostCreate(Bundle bundle) {
         control.onGotSignal(this::onControlGotSignal);
         PermissionChecker fileReadPermissionChecker = new PermissionChecker(host, true, Manifest.permission.READ_EXTERNAL_STORAGE);
-        fileReadPermissionChecker.getEventGroup().on(g -> g.permissionGranted, e -> {
-            this.create();
-        });
+        fileReadPermissionChecker.getEvents()
+          .on(g -> g.permissionGranted, e -> {
+              this.create();
+          });
         fileReadPermissionChecker.fire();
     }
     
     private void onControlGotSignal(ControlSignal signal) {
-        if(focusView.getFocusPos()!=FOCUS_TOP) return;
+        if (focusView.getFocusPos() != FOCUS_TOP) return;
         if (CTRL_MEDIA_NEXT_SECTION.equals(signal)) {
             toNextSection();
         } else if (CTRL_MEDIA_PREV_SECTION.equals(signal)) {

@@ -1,4 +1,4 @@
-package org.waynezhou.libutilkt.permission_checker
+package org.waynezhou.libutilkt.checker
 
 import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity

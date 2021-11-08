@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 public final class LibView {
     private LibView() {
     }
-
+    
     @SuppressWarnings({"unchecked", "ConstantConditions"})
     @NonNull
     public static <TViewBinding extends ViewBinding> TViewBinding inflate(

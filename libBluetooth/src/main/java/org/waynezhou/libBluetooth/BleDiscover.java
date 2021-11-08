@@ -7,25 +7,28 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import org.waynezhou.libBluetooth.eventArgs.BleDiscoverBatchResultEventArgs;
-import org.waynezhou.libBluetooth.eventGroup.BleDiscoverEventGroup;
+import org.waynezhou.libBluetooth.eventGroup.BleDiscoverBaseEventGroup;
 import org.waynezhou.libBluetooth.eventArgs.BleDiscoverFailedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleDiscoverResultEventArgs;
 import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 
 import java.util.List;
 
 public class BleDiscover {
-    private final _BleDiscoverEventGroup eventGroup = new _BleDiscoverEventGroup();
-    private final EventGroup<BleDiscoverEventGroup>.Invoker invoker;
-    private static class _BleDiscoverEventGroup extends BleDiscoverEventGroup {
-        public EventGroup<BleDiscoverEventGroup>.Invoker getInvoker() {
+    private final _BleDiscoverBaseEventGroup eventGroup = new _BleDiscoverBaseEventGroup();
+    private final BaseEventGroup<BleDiscoverBaseEventGroup>.Invoker invoker;
+    private static class _BleDiscoverBaseEventGroup extends BleDiscoverBaseEventGroup {
+        @NonNull
+        public BaseEventGroup<BleDiscoverBaseEventGroup>.Invoker getInvoker() {
             return super.getInvoker();
         }
     }
 
-    public BleDiscoverEventGroup getEventGroup() {
+    public BleDiscoverBaseEventGroup getEventGroup() {
         return eventGroup;
     }
 

@@ -7,17 +7,19 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionAcceptedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionClosedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionConnectedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionErrorEventArgs;
-import org.waynezhou.libBluetooth.eventGroup.BluetoothConnectionEventGroup;
+import org.waynezhou.libBluetooth.eventGroup.BluetoothConnectionBaseEventGroup;
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionGotMessageEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionStartedEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BluetoothConnectionWaitingAcceptedEventArgs;
-import org.waynezhou.libUtil.InputStreamLooper;
+import org.waynezhou.libUtil.looper.InputStreamLooper;
 import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,16 +51,17 @@ public class BtConnection {
         return wrapped.getInt(0);
     }
 
-    private final _BluetoothConnectionEventGroup eventGroup = new _BluetoothConnectionEventGroup();
-    private final EventGroup<BluetoothConnectionEventGroup>.Invoker invoker;
+    private final _BluetoothConnectionBaseEventGroup eventGroup = new _BluetoothConnectionBaseEventGroup();
+    private final BaseEventGroup<BluetoothConnectionBaseEventGroup>.Invoker invoker;
 
-    private static class _BluetoothConnectionEventGroup extends BluetoothConnectionEventGroup {
-        public EventGroup<BluetoothConnectionEventGroup>.Invoker getInvoker() {
+    private static class _BluetoothConnectionBaseEventGroup extends BluetoothConnectionBaseEventGroup {
+        @NonNull
+        public BaseEventGroup<BluetoothConnectionBaseEventGroup>.Invoker getInvoker() {
             return super.getInvoker();
         }
     }
 
-    public BluetoothConnectionEventGroup getEventGroup() {
+    public BluetoothConnectionBaseEventGroup getEventGroup() {
         return eventGroup;
     }
 
@@ -114,7 +117,7 @@ public class BtConnection {
         return new BtConnectionServerHandler(finalServerSocket, acceptSocket, thd, serverSwitch, out, inLoop);
     }
 
-    public BtConnectionClientHandler startConnection(BluetoothDevice device, BluetoothConnectionEventGroup eventPack) {
+    public BtConnectionClientHandler startConnection(BluetoothDevice device, BluetoothConnectionBaseEventGroup eventPack) {
         BluetoothSocket _socket = null;
         try {
             _socket = device.createInsecureRfcommSocketToServiceRecord(uuid);

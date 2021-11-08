@@ -1,4 +1,4 @@
-package org.waynezhou.libView.view_transition;
+package org.waynezhou.libView.transition;
 
 import android.animation.Animator;
 import android.animation.PropertyValuesHolder;
@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 public class ViewStep<TValueHolder> {
 

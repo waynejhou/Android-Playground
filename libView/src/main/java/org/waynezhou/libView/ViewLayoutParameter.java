@@ -14,7 +14,8 @@ public class ViewLayoutParameter {
     public ViewLayoutParameter set(MarginLayoutParamsRunBlock block){
         block.run(mlParams);
         return this;
-    };
+    }
+    
     public int getTop(){
         return mlParams.topMargin;
     }
@@ -37,7 +38,7 @@ public class ViewLayoutParameter {
     public ViewLayoutParameter hide(){
         mlParams.width = 0;
         mlParams.height = 0;
-        ((ViewGroup.MarginLayoutParams) mlParams).setMargins(0,0,0,0);
+        mlParams.setMargins(0,0,0,0);
         return this;
     }
 

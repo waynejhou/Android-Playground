@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil;
+package org.waynezhou.libUtil.linq;
 
 import androidx.annotation.NonNull;
 

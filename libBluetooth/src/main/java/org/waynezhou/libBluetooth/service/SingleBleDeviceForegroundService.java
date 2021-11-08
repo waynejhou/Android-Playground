@@ -23,10 +23,10 @@ import org.waynezhou.libBluetooth.BleDiscover;
 import org.waynezhou.libBluetooth.BleDiscoverHandler;
 import org.waynezhou.libBluetooth.BleGattClient;
 import org.waynezhou.libBluetooth.BleGattClientHandle;
-import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.SpinWait;
-import org.waynezhou.libUtil.StandardKt;
-import org.waynezhou.libUtil.ThreadUtils;
+import org.waynezhou.libUtil.log.LogHelper;
+import org.waynezhou.libUtil.schedule.SpinWait;
+import org.waynezhou.libUtil.standard.StandardKt;
+import org.waynezhou.libUtil.schedule.ThreadSchedule;
 
 import java.util.UUID;
 
@@ -104,7 +104,7 @@ public abstract class SingleBleDeviceForegroundService extends Service {
               } else if (e.newState == BluetoothGatt.STATE_DISCONNECTED) {
                   notificationManager.notify(foregroundNotificationId,
                     foregroundNotificationBuilder.setContentText(String.format("%s Disconnected, Retrying", controllerDevice.getName())).build());
-                  ThreadUtils.run(() -> {
+                  ThreadSchedule.run(() -> {
                       if (controllerHandler != null) {
                           controllerHandler.close();
                           controllerHandler = null;

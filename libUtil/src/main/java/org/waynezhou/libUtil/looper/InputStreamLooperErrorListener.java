@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil.input_stream_looper;
+package org.waynezhou.libUtil.looper;
 
 @Deprecated
 @FunctionalInterface

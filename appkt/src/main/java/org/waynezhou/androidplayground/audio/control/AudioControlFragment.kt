@@ -1,9 +1,11 @@
 package org.waynezhou.androidplayground.audio.control
 
-import android.media.MediaPlayer
+import android.media.*
 import android.net.Uri
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import org.waynezhou.androidplayground.audio.model.AudioModel
 import org.waynezhou.androidplayground.databinding.FragmentAudioControlBinding
 import org.waynezhou.libutilkt.LogHelper
@@ -12,7 +14,8 @@ import org.waynezhou.libutilkt.LogHelper
 class AudioControlFragment : androidx.fragment.app.Fragment() {
     private lateinit var binding: FragmentAudioControlBinding
 
-    private val player = MediaPlayer()
+    private val mediaPlayer = MediaPlayer()
+    private val metadataRetriever = MediaMetadataRetriever()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -21,38 +24,53 @@ class AudioControlFragment : androidx.fragment.app.Fragment() {
     ): View {
         binding = FragmentAudioControlBinding.inflate(inflater, container, false)
         binding.audioControlPlayPause.setOnClickListener {
-            player.setOnSeekCompleteListener {
-                player.start()
-                player.setOnSeekCompleteListener(null)
+            mediaPlayer.setOnSeekCompleteListener {
+                mediaPlayer.start()
+                mediaPlayer.setOnSeekCompleteListener(null)
             }
-            player.seekTo(0)
+            mediaPlayer.seekTo(0)
         }
         return binding.root
     }
 
     fun setAudio(audio: AudioModel){
-        context?.run{
-            player.reset()
-            player.setDataSource(this, audio.contentUri)
-            player.prepareAsync()
-            binding.audioControlTitle.text = audio.displayName
-            return
-        }
-        throw NullPointerException()
+        setAudio(audio.contentUri)
     }
     fun setAudio(audio: Uri){
         context?.run{
-            player.reset()
-            player.setDataSource(this, audio)
-            player.prepareAsync()
-            binding.audioControlTitle.text = audio.toString()
+            mediaPlayer.reset()
+            if(audio.scheme == "file"){
+                MediaScannerConnection.scanFile(context, arrayOf(audio.path), arrayOfNulls(1)) { _, uri ->
+                    LogHelper.d(uri)
+                    mediaPlayer.setDataSource(this, uri)
+                    mediaPlayer.prepareAsync()
+                    mediaPlayer.setOnPreparedListener {
+                        binding.audioControlTitle.text = audio.toString()
+                        mediaPlayer.setOnPreparedListener(null)
+                    }
+                }
+            }else{
+                LogHelper.d(audio)
+                mediaPlayer.setAudioAttributes(AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+                    .build())
+                mediaPlayer.setDataSource(this, audio)
+                mediaPlayer.setOnPreparedListener {
+                    LogHelper.d(audio)
+                    binding.audioControlTitle.text = audio.toString()
+                    mediaPlayer.setOnPreparedListener(null)
+                }
+                mediaPlayer.prepare()
+            }
             return
         }
         throw NullPointerException()
     }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
     }
 }
+

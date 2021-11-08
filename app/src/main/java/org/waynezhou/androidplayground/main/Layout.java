@@ -3,7 +3,7 @@ package org.waynezhou.androidplayground.main;
 import static org.waynezhou.androidplayground.main.ControlSignal.*;
 import static org.waynezhou.androidplayground.main.FocusPosition.FOCUS_TOP;
 import static org.waynezhou.androidplayground.main.LayoutChangedReason.*;
-import static org.waynezhou.libView.view_transition.LayoutTransitionPropertyBridges.*;
+import static org.waynezhou.libView.transition.LayoutTransitionPropertyBridges.*;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -18,10 +18,10 @@ import androidx.appcompat.app.ActionBar;
 import org.waynezhou.androidplayground.databinding.ActivityMainBinding;
 import org.waynezhou.libUtil.DelegateUtils;
 import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.StandardKt;
-import org.waynezhou.libView.view_transition.ViewAnimatorArgs;
-import org.waynezhou.libView.view_transition.ViewStep;
-import org.waynezhou.libView.view_transition.ViewTransition;
+import org.waynezhou.libUtil.standard.StandardKt;
+import org.waynezhou.libView.transition.ViewAnimatorArgs;
+import org.waynezhou.libView.transition.ViewStep;
+import org.waynezhou.libView.transition.ViewTransition;
 
 @SuppressWarnings({"unused", "FieldCanBeLocal"})
 final class Layout {
@@ -37,8 +37,8 @@ final class Layout {
         this.focusView = host.focusView;
         this.rotate = host.rotate;
         this.control = host.control;
-        host.getEventGroup().on(g -> g.create, this::onHostCreate);
-        host.getEventGroup().on(g -> g.resume, $ -> hideSystemUI());
+        host.getEvents().on(g -> g.create, this::onHostCreate);
+        host.getEvents().on(g -> g.resume, $ -> hideSystemUI());
     }
     
     ActivityMainBinding binding;

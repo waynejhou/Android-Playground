@@ -1,4 +1,4 @@
-package org.waynezhou.libutilkt.activity_result_register
+package org.waynezhou.libutilkt.register
 
 import android.content.Context
 import android.content.Intent
@@ -7,7 +7,6 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.AppCompatActivity
 import org.waynezhou.libutilkt.event.BaseEventGroup
 import org.waynezhou.libutilkt.event.EventHolder
-import java.util.*
 
 class ActivityResultRegister(
     val activity:AppCompatActivity,
@@ -29,7 +28,7 @@ class ActivityResultRegister(
             }
 
             override fun parseResult(resultCode: Int, intent: Intent?): ActivityResultEventArgs {
-                return ActivityResultEventArgs(resultCode, intent);
+                return ActivityResultEventArgs(resultCode, intent)
             }
         }
     ) { invoker.invoke({ it.result }, it) }

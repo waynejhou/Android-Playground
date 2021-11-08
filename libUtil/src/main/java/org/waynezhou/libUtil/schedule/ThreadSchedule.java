@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil.schedule.thread;
+package org.waynezhou.libUtil.schedule;
 
 import androidx.annotation.NonNull;
 
@@ -8,8 +8,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public final class ThreadUtils {
-    private ThreadUtils(){}
+public final class ThreadSchedule {
+    private ThreadSchedule(){}
     
     @NonNull
     public static Thread run(@NonNull Runnable runnable){

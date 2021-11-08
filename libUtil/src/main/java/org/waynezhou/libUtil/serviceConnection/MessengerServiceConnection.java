@@ -5,6 +5,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.Messenger;
 
+@Deprecated
 public class MessengerServiceConnection implements ServiceConnection {
 
     private LocalBinderServiceConnectedListener<Messenger> connectedListener = ($1, $2) -> {
@@ -35,8 +36,7 @@ public class MessengerServiceConnection implements ServiceConnection {
         nullBindingListener = listener;
         return this;
     }
-
-    @SuppressWarnings("unchecked")
+    
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         connectedListener.invoke(name, new Messenger(service));

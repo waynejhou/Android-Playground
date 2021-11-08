@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil.activity_register;
+package org.waynezhou.libUtil.register;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

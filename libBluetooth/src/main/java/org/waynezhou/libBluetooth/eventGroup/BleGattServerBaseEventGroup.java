@@ -11,10 +11,10 @@ import org.waynezhou.libBluetooth.eventArgs.BleGattServerNotificationSentEventAr
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerPhyReadEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerPhyUpdateEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleGattServerServiceAddedEventArgs;
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 import org.waynezhou.libUtil.event.EventHolder;
 
-public class BleGattServerEventGroup extends EventGroup<BleGattServerEventGroup> {
+public class BleGattServerBaseEventGroup extends BaseEventGroup<BleGattServerBaseEventGroup> {
 
     public final EventHolder<BleGattServerCharacteristicReadRequestEventArgs> characteristicReadRequest = new EventHolder<>();
     public final EventHolder<BleGattServerCharacteristicWriteRequestEventArgs> characteristicWriteRequest = new EventHolder<>();

@@ -2,22 +2,24 @@ package org.waynezhou.libBluetooth;
 
 import android.Manifest;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.waynezhou.libUtil.PermissionChecker;
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.checker.PermissionChecker;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 
 public class BtGuarantor /*extends EventAction<BluetoothGuarantor, BluetoothGuarantorEventGroup>*/ {
     
-    private final _BtGuarantorEventGroup eventGroup = new _BtGuarantorEventGroup();
+    private final _BtGuarantorBaseEventGroup eventGroup = new _BtGuarantorBaseEventGroup();
     
-    private static class _BtGuarantorEventGroup extends BtGuarantorEventGroup {
-        public EventGroup<BtGuarantorEventGroup>.Invoker getInvoker() {
+    private static class _BtGuarantorBaseEventGroup extends BtGuarantorBaseEventGroup {
+        @NonNull
+        public BaseEventGroup<BtGuarantorBaseEventGroup>.Invoker getInvoker() {
             return super.getInvoker();
         }
     }
     
-    public BtGuarantorEventGroup getEventGroup() {
+    public BtGuarantorBaseEventGroup getEventGroup() {
         return eventGroup;
     }
     
@@ -37,7 +39,7 @@ public class BtGuarantor /*extends EventAction<BluetoothGuarantor, BluetoothGuar
     
     //@Override
     public void fire() {
-        checker.getEventGroup()
+        checker.getEvents()
           .once(g -> g.permissionDenied, $ -> {
               eventGroup.getInvoker().invoke(
                 g -> g.notGuaranteed,
@@ -45,12 +47,12 @@ public class BtGuarantor /*extends EventAction<BluetoothGuarantor, BluetoothGuar
           })
           .once(g -> g.permissionGranted, $ -> {
               enabler.getEventGroup()
-                .once(BtEnablerEventGroup::getAgree, $$ -> {
+                .once(BtEnablerBaseEventGroup::getAgree, $$ -> {
                     eventGroup.getInvoker().invoke(
                       g -> g.guaranteed,
                       null);
                 })
-                .once(BtEnablerEventGroup::getDisagree, $$ -> {
+                .once(BtEnablerBaseEventGroup::getDisagree, $$ -> {
                     eventGroup.getInvoker().invoke(
                       g -> g.notGuaranteed,
                       BtNotGuaranteedReason.BluetoothNotEnabled);

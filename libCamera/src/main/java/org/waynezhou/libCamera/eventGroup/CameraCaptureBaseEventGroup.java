@@ -1,9 +1,9 @@
 package org.waynezhou.libCamera.eventGroup;
 
-import org.waynezhou.libUtil.event.EventGroup;
+import org.waynezhou.libUtil.event.BaseEventGroup;
 import org.waynezhou.libUtil.event.EventHolder;
 
-public class CameraCaptureEventGroup extends EventGroup<CameraCaptureEventGroup> {
+public class CameraCaptureBaseEventGroup extends BaseEventGroup<CameraCaptureBaseEventGroup> {
     public final EventHolder<CapturedEventArgs> captured = new EventHolder<>();
     public static class CapturedEventArgs{
         public final byte[] bytes;

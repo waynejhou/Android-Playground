@@ -9,25 +9,19 @@ import org.waynezhou.androidplayground.audio.control.AudioControlFragment
 import org.waynezhou.androidplayground.audio.list.AudioListFragment
 import org.waynezhou.androidplayground.audio.model.AudioModel
 import org.waynezhou.androidplayground.databinding.ActivityMainBinding
-import org.waynezhou.libutilkt.LogHelper
-import org.waynezhou.libutilkt.PermissionChecker
-import org.waynezhou.libviewkt.ActivityComponent
-import org.waynezhou.libviewkt.ComponentedAppCompatActivityWrapper
+import org.waynezhou.libutilkt.checker.PermissionChecker
+import org.waynezhou.libutilkt.activity.ActivityComponent
+import org.waynezhou.libutilkt.activity.ComponentizedActivity
 import org.waynezhou.libviewkt.view_transition.*
 
 
-class Activity : ComponentedAppCompatActivityWrapper(), IActivityStartup, IActivityLayout,
-    IAudioControl {
+class MainActivity : ComponentizedActivity<MainActivity>(), IActivityStartup, IActivityLayout, IAudioControl {
     private val startup = Startup()
     private val layout = Layout()
     private val audioList = AudioList()
     private val audioControl = AudioControl()
-    override fun onInitComponents(savedInstanceState: Bundle?) {
-        startup.init(this)
-        layout.init(this)
-        audioList.init(this)
-        audioControl.init(this)
-    }
+    override val components: List<ActivityComponent<MainActivity>>
+        get() = arrayListOf(startup, layout, audioList, audioControl)
 
     override val startupReasons: StartupReasons
         get() = startup.startupReasons
@@ -61,7 +55,7 @@ interface IAudioControl {
     fun openAudio(audio: Uri)
 }
 
-class AudioControl : ActivityComponent<Activity>(), IAudioControl {
+class AudioControl : ActivityComponent<MainActivity>(), IAudioControl {
     private val binding: ActivityMainBinding
         get() = host.binding
 
@@ -69,9 +63,8 @@ class AudioControl : ActivityComponent<Activity>(), IAudioControl {
         host.events.on({ it.backPressed }, this::onHostBackPressed)
     }
 
-    private fun onHostBackPressed(args: ComponentedAppCompatActivityWrapper.BackPressEventArgs) {
+    private fun onHostBackPressed(args: ComponentizedActivity.BackPressEventArgs) {
         host.run {
-            LogHelper.d("$startupReason ${startupReason == startupReasons.fromUri}")
             if (startupReason == startupReasons.fromUri) {
                 args.runSuperBackPress = true
             } else {
@@ -111,11 +104,12 @@ class AudioControl : ActivityComponent<Activity>(), IAudioControl {
     }
 }
 
-class AudioList : ActivityComponent<Activity>() {
+class AudioList : ActivityComponent<MainActivity>() {
     private val binding: ActivityMainBinding
         get() = host.binding
     private val fragmentManager: FragmentManager
         get() = host.supportFragmentManager
+
 
     override fun onHostCreate(savedInstanceState: Bundle?) {
         audioListFragment.apply {
@@ -125,7 +119,7 @@ class AudioList : ActivityComponent<Activity>() {
         }
         PermissionChecker(host, true, Manifest.permission.READ_EXTERNAL_STORAGE)
             .apply {
-                eventGroup.on({ it.permissionGranted }, this@AudioList::onReadPermissionAllow)
+                events.on({ it.permissionGranted }, this@AudioList::onReadPermissionAllow)
             }.fire()
     }
 

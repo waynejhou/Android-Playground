@@ -1,17 +1,33 @@
-package org.waynezhou.libUtil.schedule.thread;
+package org.waynezhou.libUtil.schedule;
+
+import android.os.Handler;
+
+import androidx.annotation.NonNull;
 
 import java.util.concurrent.ScheduledExecutorService;
 
 public class IntervalHandler {
-    private final ScheduledExecutorService scheduledExecutorService;
+    @NonNull
+    private final Runnable stopAction;
     
-    IntervalHandler(ScheduledExecutorService scheduledExecutorService) {
-        this.scheduledExecutorService = scheduledExecutorService;
+    IntervalHandler(@NonNull ScheduledExecutorService scheduledExecutorService) {
+        stopAction = () -> {
+            if (!scheduledExecutorService.isShutdown()) {
+                scheduledExecutorService.shutdown();
+            }
+        };
+    }
+    
+    IntervalHandler(
+      @NonNull Handler handler,
+      @NonNull HandlerSchedule.RunnableWrapper wrapper
+    ) {
+        stopAction = () -> {
+            handler.removeCallbacks(wrapper.runnable);
+        };
     }
     
     public void shutdown() {
-        if (!scheduledExecutorService.isShutdown()) {
-            scheduledExecutorService.shutdown();
-        }
+        stopAction.run();
     }
 }

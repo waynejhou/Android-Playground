@@ -1,12 +1,9 @@
 package org.waynezhou.androidplayground.main;
 
 import static org.waynezhou.androidplayground.main.ControlSignal.*;
-import static org.waynezhou.androidplayground.main.FocusPosition.*;
 
 import android.annotation.SuppressLint;
-import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -16,7 +13,6 @@ import org.waynezhou.libUtil.LogHelper;
 import org.waynezhou.libUtil.event.EventHandler;
 import org.waynezhou.libUtil.event.EventHolder;
 import org.waynezhou.libUtil.event.EventListener;
-import org.waynezhou.libUtil.eventArgs.SensorChangedEventArgs;
 
 final class Control {
     private Activity host;
@@ -34,7 +30,7 @@ final class Control {
         
         //this.host.getEventGroup().on(g->g.pause, $->gSensor.Off());
         //this.host.getEventGroup().on(g->g.resume, $->gSensor.On());
-        this.host.getEventGroup()
+        this.host.getEvents()
           .on(g -> g.create, this::onHostCreate)
           .on(g -> g.keyDown, this::onHostKeyDown)
         ;

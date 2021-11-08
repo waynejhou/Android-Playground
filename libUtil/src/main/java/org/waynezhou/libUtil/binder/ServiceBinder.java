@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil;
+package org.waynezhou.libUtil.binder;
 
 import android.app.Service;
 import android.content.ComponentName;

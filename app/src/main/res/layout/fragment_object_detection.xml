@@ -22,6 +22,6 @@
             android:id="@+id/objdet_secret_image"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:layout_marginLeft="50dp"/>
+            android:layout_marginStart="50dp"/>
     </FrameLayout>
 </FrameLayout>

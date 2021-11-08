@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
+@Deprecated
 public class LocalBinderServiceConnection<TLocalBinder extends IBinder> implements ServiceConnection {
 
     private LocalBinderServiceConnectedListener<TLocalBinder> connectedListener = ($1,$2)->{};

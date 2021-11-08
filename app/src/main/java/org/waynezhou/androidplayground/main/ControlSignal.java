@@ -1,6 +1,6 @@
 package org.waynezhou.androidplayground.main;
 
-import org.waynezhou.libUtil.EnumClass;
+import org.waynezhou.libUtil.enumclass.EnumClass;
 
 
 final class ControlSignal extends EnumClass.Int {

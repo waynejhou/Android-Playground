@@ -3,9 +3,9 @@ package org.waynezhou.libBluetooth;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 
-import org.waynezhou.libUtil.InputStreamLooper;
+import org.waynezhou.libUtil.looper.InputStreamLooper;
 import org.waynezhou.libUtil.LogHelper;
-import org.waynezhou.libUtil.ThreadUtils;
+import org.waynezhou.libUtil.schedule.ThreadSchedule;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,7 +41,7 @@ public class BtConnectionServerHandler extends BtConnectionHandler {
 
     @Override
     public void onSend(byte[] msg) {
-        ThreadUtils.run(() -> {
+        ThreadSchedule.run(() -> {
             try {
                 out.get().write(msg);
             } catch (IOException e) {

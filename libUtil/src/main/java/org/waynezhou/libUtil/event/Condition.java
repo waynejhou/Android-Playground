@@ -1,2 +1,6 @@
-package org.waynezhou.libUtil.event;public interface Condition {
+package org.waynezhou.libUtil.event;
+
+@FunctionalInterface
+public interface Condition {
+    boolean test();
 }

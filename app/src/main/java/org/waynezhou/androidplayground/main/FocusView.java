@@ -14,7 +14,7 @@ final class FocusView {
         rotate = host.rotate;
         layout = host.layout;
         control = host.control;
-        host.getEventGroup().on(e->e.create, this::onHostCreate);
+        host.getEvents().on(e->e.create, this::onHostCreate);
     }
     
     private void onHostCreate(Bundle bundle) {

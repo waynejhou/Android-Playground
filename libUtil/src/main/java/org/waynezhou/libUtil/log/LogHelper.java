@@ -1,17 +1,11 @@
-package org.waynezhou.libUtil;
+package org.waynezhou.libUtil.log;
 
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.waynezhou.libUtil.reflection.Reflection;
-import org.waynezhou.libUtil.reflection.ReflectionException;
-
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 
 public final class LogHelper {
     private LogHelper() {

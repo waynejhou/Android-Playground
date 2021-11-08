@@ -1,4 +1,4 @@
-package org.waynezhou.libUtil;
+package org.waynezhou.libUtil.enumclass;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,7 +20,7 @@ public abstract class EnumClass<T> {
         this.identifier = identifier;
         this.statement = statement;
         map = new HashMap<>(map);
-        map.put((Object) this.identifier, this);
+        map.put(this.identifier, this);
         map = Collections.unmodifiableMap(map);
     }
 
@@ -42,7 +42,7 @@ public abstract class EnumClass<T> {
     @NonNull
     @Override
     public String toString() {
-        return statement.toString();
+        return statement;
     }
 
     public static abstract class Int extends EnumClass<Integer>{

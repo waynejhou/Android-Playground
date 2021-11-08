@@ -1,4 +1,4 @@
-package org.waynezhou.libutilkt.enum_class
+package org.waynezhou.libutilkt.enum
 
 
 

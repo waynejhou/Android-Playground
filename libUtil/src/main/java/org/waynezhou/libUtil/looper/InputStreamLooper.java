@@ -1,6 +1,6 @@
-package org.waynezhou.libUtil.input_stream_looper;
+package org.waynezhou.libUtil.looper;
 
-import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.log.LogHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
