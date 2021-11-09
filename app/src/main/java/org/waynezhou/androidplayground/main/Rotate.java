@@ -15,6 +15,7 @@ import android.os.Bundle;
 
 import androidx.core.util.Consumer;
 
+import org.waynezhou.libUtil.activity.ActivityComponent;
 import org.waynezhou.libUtil.event.EventHandler;
 import org.waynezhou.libUtil.event.EventHolder;
 import org.waynezhou.libUtil.event.EventListener;
@@ -22,26 +23,28 @@ import org.waynezhou.libUtil.eventArgs.SensorChangedEventArgs;
 import org.waynezhou.libUtil.log.LogHelper;
 import org.waynezhou.libUtil.toggle.SensorToggle;
 
-final class Rotate {
-    private Activity host;
+interface IRotate{
+    void rotateActivity(boolean withRequest);
+}
+
+final class Rotate extends ActivityComponent<MainActivity> implements IRotate {
     private Integer orientation = null;
-    private Layout layout;
-    private Control control;
-    private AutoRotationSource autoRotate;
+    private final AutoRotationSource autoRotate;
     @SuppressWarnings("FieldCanBeLocal")
     private SensorToggle gSensor;
-    void init(Activity activity, @SuppressWarnings("SameParameterValue") AutoRotationSource autoRotate) {
-        host = activity;
-        layout = host.layout;
-        control = host.control;
-        orientation = host.getResources().getConfiguration().orientation;
+    
+    Rotate(AutoRotationSource autoRotate) {
         this.autoRotate = autoRotate;
-        this.autoRotate.init(this);
-        host.getEvents()
-          .on(h->h.create, this::onHostCreate);
     }
     
-    private void onHostCreate(Bundle bundle) {
+    @Override
+    protected void onInit() {
+        orientation = host.getResources().getConfiguration().orientation;
+        this.autoRotate.init(this);
+    }
+    
+    @Override
+    protected void onHostCreate(Bundle bundle) {
         control.onGotSignal(this::onControlGotSignal);
         autoRotate.create();
     }
@@ -61,7 +64,7 @@ final class Rotate {
         }
     }
     private void onGSensorValueChanged(SensorChangedEventArgs e) {
-        if (!layout.isContentViewSet()) return;
+        if (!host.isContentViewSet()) return;
         float[] axis = e.event.values;
         final float x = axis[0];
         final float y = axis[1];
@@ -103,9 +106,9 @@ final class Rotate {
     // region output action
     private void onControlGotSignal(ControlSignal signal) {
         if(CTRL_ROTATE.equals(signal)){
-            auto(false);
+            rotateActivity(false);
         }else if(CTRL_ROTATE_REQUEST.equals(signal)){
-            auto(true);
+            rotateActivity(true);
         }else if(CTRL_ROTATE_LAND_REQUEST.equals(signal)){
             toLand(true);
         }else if(CTRL_ROTATE_PORT_REQUEST.equals(signal)){
@@ -114,7 +117,8 @@ final class Rotate {
     }
     
     
-    void auto(boolean withRequest) {
+    @Override
+    public void rotateActivity(boolean withRequest) {
         if (isLand()) {
             _toPort(withRequest);
         } else if (isPort()) {

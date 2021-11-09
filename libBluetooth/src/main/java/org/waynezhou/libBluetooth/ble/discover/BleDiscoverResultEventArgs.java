@@ -1,4 +1,4 @@
-package org.waynezhou.libBluetooth.eventArgs;
+package org.waynezhou.libBluetooth.ble.discover;
 
 import android.bluetooth.le.ScanResult;
 

@@ -16,7 +16,7 @@
             android:foregroundServiceType="connectedDevice|location"
             />
         <activity
-            android:name=".main.Activity"
+            android:name=".main.MainActivity"
             android:configChanges="orientation|screenLayout|screenSize|keyboard|keyboardHidden"
             android:exported="true"
             android:screenOrientation="unspecified"

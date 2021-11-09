@@ -1,4 +1,4 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.ble.gatt;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 

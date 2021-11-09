@@ -1,4 +1,4 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.bt.guarantor;
 
 public enum BtNotGuaranteedReason {
     GrantedNoPermission,

@@ -1,9 +1,9 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.ble.discover;
 
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 
-import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.log.LogHelper;
 
 public class BleDiscoverHandler {
     final BluetoothLeScanner scanner;

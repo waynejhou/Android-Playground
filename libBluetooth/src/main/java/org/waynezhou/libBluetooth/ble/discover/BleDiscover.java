@@ -1,4 +1,4 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.ble.discover;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -9,26 +9,32 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import org.waynezhou.libBluetooth.eventArgs.BleDiscoverBatchResultEventArgs;
-import org.waynezhou.libBluetooth.eventGroup.BleDiscoverBaseEventGroup;
-import org.waynezhou.libBluetooth.eventArgs.BleDiscoverFailedEventArgs;
-import org.waynezhou.libBluetooth.eventArgs.BleDiscoverResultEventArgs;
-import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.event.EventHolder;
+import org.waynezhou.libUtil.log.LogHelper;
 import org.waynezhou.libUtil.event.BaseEventGroup;
 
 import java.util.List;
 
 public class BleDiscover {
-    private final _BleDiscoverBaseEventGroup eventGroup = new _BleDiscoverBaseEventGroup();
-    private final BaseEventGroup<BleDiscoverBaseEventGroup>.Invoker invoker;
-    private static class _BleDiscoverBaseEventGroup extends BleDiscoverBaseEventGroup {
+    public static class EventGroup extends BaseEventGroup<EventGroup> {
         @NonNull
-        public BaseEventGroup<BleDiscoverBaseEventGroup>.Invoker getInvoker() {
-            return super.getInvoker();
-        }
+        public final EventHolder<BleDiscoverBatchResultEventArgs> gotBatchResult = new EventHolder<>();
+        @NonNull
+        public final EventHolder<BleDiscoverFailedEventArgs> failed = new EventHolder<>();
+        @NonNull
+        public final EventHolder<BleDiscoverResultEventArgs> gotResult = new EventHolder<>();
+        @NonNull
+        Invoker getPrivateInvoker(){return getInvoker();}
     }
+    
+    @NonNull
+    private final EventGroup eventGroup = new EventGroup();
+    
+    @NonNull
+    private final BaseEventGroup<EventGroup>.Invoker invoker;
+    
 
-    public BleDiscoverBaseEventGroup getEventGroup() {
+    public BaseEventGroup<EventGroup> getEvents() {
         return eventGroup;
     }
 
@@ -58,7 +64,7 @@ public class BleDiscover {
     };
 
     public BleDiscover(boolean skipNamelessDevice) {
-        invoker = eventGroup.getInvoker();
+        invoker = eventGroup.getPrivateInvoker();
         this.skipNamelessDevice = skipNamelessDevice;
     }
 

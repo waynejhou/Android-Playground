@@ -14,12 +14,12 @@ import org.waynezhou.libView.MediaView;
 import java.io.IOException;
 
 final class MediaTop {
-    private Activity host;
+    private MainActivity host;
     private Layout layout;
     private Control control;
     private FocusView focusView;
     
-    void init(Activity activity) {
+    void init(MainActivity activity) {
         this.host = activity;
         this.host.getEvents().on(g -> g.create, this::onHostCreate);
         this.layout = host.layout;

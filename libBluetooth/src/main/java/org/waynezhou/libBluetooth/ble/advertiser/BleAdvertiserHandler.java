@@ -1,4 +1,4 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.ble.advertiser;
 
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.BluetoothLeAdvertiser;

@@ -1,4 +1,4 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.bt.enabler;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -6,29 +6,39 @@ import android.bluetooth.BluetoothAdapter;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.waynezhou.libUtil.event.EventHolder;
 import org.waynezhou.libUtil.register.ActivityResultRegister;
 import org.waynezhou.libUtil.event.BaseEventGroup;
 
 public final class BtEnabler {
-    private final _BtEnablerBaseEventGroup eventGroup = new _BtEnablerBaseEventGroup();
-    private final BaseEventGroup<BtEnablerBaseEventGroup>.Invoker invoker;
-
-    private static class _BtEnablerBaseEventGroup extends BtEnablerBaseEventGroup {
+    public static class EventGroup extends BaseEventGroup<EventGroup> {
         @NonNull
-        public BaseEventGroup<BtEnablerBaseEventGroup>.Invoker getInvoker() {
-            return super.getInvoker();
+        public final EventHolder<Void> agree = new EventHolder<>();
+        @NonNull
+        public final EventHolder<Void> disagree = new EventHolder<>();
+        
+        @NonNull
+        Invoker getPrivateInvoker() {
+            return getInvoker();
         }
     }
-
-    public BtEnablerBaseEventGroup getEventGroup() {
+    
+    @NonNull
+    private final EventGroup eventGroup = new EventGroup();
+    
+    @NonNull
+    private final BaseEventGroup<EventGroup>.Invoker invoker;
+    
+    @NonNull
+    public BaseEventGroup<EventGroup> getEvents() {
         return eventGroup;
     }
 
     @NonNull
     private final ActivityResultRegister register;
 
-    protected BtEnabler(AppCompatActivity activity) {
-        this.invoker = eventGroup.getInvoker();
+    public BtEnabler(AppCompatActivity activity) {
+        this.invoker = eventGroup.getPrivateInvoker();
         this.register = new ActivityResultRegister.Builder()
                 .action(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 .buildOn(activity);
@@ -38,9 +48,9 @@ public final class BtEnabler {
         register.getEvents()
                 .on(g->g.result, e -> {
                     if (e.resultCode == Activity.RESULT_OK) {
-                        invoker.invoke(BtEnablerBaseEventGroup::getAgree, null);
+                        invoker.invoke(g->g.agree, null);
                     } else {
-                        invoker.invoke(BtEnablerBaseEventGroup::getDisagree, null);
+                        invoker.invoke(g->g.disagree, null);
                     }
                 });
         register.fire();

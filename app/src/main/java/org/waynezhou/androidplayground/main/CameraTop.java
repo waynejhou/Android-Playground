@@ -10,27 +10,23 @@ import android.view.Surface;
 import android.view.WindowManager;
 
 import org.waynezhou.libCamera.CameraView;
-import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.log.LogHelper;
+import org.waynezhou.libUtil.activity.ActivityComponent;
+import org.waynezhou.libUtil.activity.ComponentizedActivity;
 import org.waynezhou.libUtil.standard.StandardKt;
 import org.waynezhou.libUtil.checker.PermissionChecker;
 
-public class CameraTop {
-    private Activity host;
-    private Layout layout;
-    private Rotate rotate;
+public class CameraTop extends ActivityComponent<MainActivity> {
     private Display windowDisplay;
     
-    public void init(Activity activity) {
-        this.host = activity;
-        this.layout = host.layout;
-        this.rotate = host.rotate;
-        host.getEvents().on(g -> g.create, this::onHostCreate);
-        
+    @Override
+    protected void onInit() {
         WindowManager windowManager = (WindowManager) host.getSystemService(WINDOW_SERVICE);
         windowDisplay = windowManager.getDefaultDisplay();
     }
     
-    private void onHostCreate(Bundle bundle) {
+    @Override
+    protected void onHostCreate(Bundle bundle) {
         rotate.onRotated(this::onHostRotated);
         this.create();
     }

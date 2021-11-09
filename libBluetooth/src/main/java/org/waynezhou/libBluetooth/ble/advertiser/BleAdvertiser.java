@@ -1,4 +1,4 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.ble.advertiser;
 
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.AdvertiseCallback;
@@ -8,9 +8,6 @@ import android.bluetooth.le.BluetoothLeAdvertiser;
 
 import androidx.annotation.NonNull;
 
-import org.waynezhou.libBluetooth.eventGroup.BleAdvertiserBaseEventGroup;
-import org.waynezhou.libBluetooth.eventArgs.BleAdvertiserStartFailureEventArgs;
-import org.waynezhou.libBluetooth.eventArgs.BleAdvertiserStartSuccessEventArgs;
 import org.waynezhou.libUtil.event.BaseEventGroup;
 import org.waynezhou.libUtil.event.EventHolder;
 

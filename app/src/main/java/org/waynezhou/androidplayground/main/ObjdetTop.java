@@ -16,12 +16,12 @@ import org.waynezhou.libUtil.standard.StandardKt;
 import org.waynezhou.libUtil.checker.PermissionChecker;
 
 public class ObjdetTop {
-    private Activity host;
+    private MainActivity host;
     private Layout layout;
     private Rotate rotate;
     private Display windowDisplay;
     private FragmentManager fragmentManager;
-    public void init(Activity activity){
+    public void init(MainActivity activity){
         this.host = activity;
         this.layout = host.layout;
         this.rotate = host.rotate;

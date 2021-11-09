@@ -1,10 +1,10 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.bt.connection;
 
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 
 import org.waynezhou.libUtil.looper.InputStreamLooper;
-import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.log.LogHelper;
 import org.waynezhou.libUtil.schedule.ThreadSchedule;
 
 import java.io.IOException;

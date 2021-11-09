@@ -1,8 +1,6 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.bt.connection;
 
-import android.util.Log;
-
-import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.log.LogHelper;
 
 import java.nio.ByteBuffer;
 

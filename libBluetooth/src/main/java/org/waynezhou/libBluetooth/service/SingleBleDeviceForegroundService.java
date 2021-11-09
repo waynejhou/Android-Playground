@@ -19,10 +19,10 @@ import androidx.core.app.NotificationChannelCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import org.waynezhou.libBluetooth.BleDiscover;
-import org.waynezhou.libBluetooth.BleDiscoverHandler;
-import org.waynezhou.libBluetooth.BleGattClient;
-import org.waynezhou.libBluetooth.BleGattClientHandle;
+import org.waynezhou.libBluetooth.ble.discover.BleDiscover;
+import org.waynezhou.libBluetooth.ble.discover.BleDiscoverHandler;
+import org.waynezhou.libBluetooth.ble.gatt.BleGattClient;
+import org.waynezhou.libBluetooth.ble.gatt.BleGattClientHandle;
 import org.waynezhou.libUtil.log.LogHelper;
 import org.waynezhou.libUtil.schedule.SpinWait;
 import org.waynezhou.libUtil.standard.StandardKt;
@@ -92,7 +92,7 @@ public abstract class SingleBleDeviceForegroundService extends Service {
     private BluetoothDevice controllerDevice;
     
     private final BleGattClient controllerGattClient = StandardKt.apply(new BleGattClient(), it -> {
-        it.getEventGroup()
+        it.getEvents()
           .on(g -> g.connectionStateChanged, e -> {
               LogHelper.i("controller connected");
               LogHelper.ie(() -> e.status != BluetoothGatt.GATT_SUCCESS, BleGattClient.explainConnectionStatus(e.status));
@@ -158,7 +158,7 @@ public abstract class SingleBleDeviceForegroundService extends Service {
     
     private boolean isBleDiscoverTerminated = true;
     private final BleDiscover controllerDiscover = StandardKt.apply(new BleDiscover(true), it -> {
-        it.getEventGroup()
+        it.getEvents()
           .on(g -> g.failed, e -> {
               LogHelper.e("Ble Discover Failed: " + e.errorCode);
           })

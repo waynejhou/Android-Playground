@@ -1,4 +1,4 @@
-package org.waynezhou.libBluetooth.eventArgs;
+package org.waynezhou.libBluetooth.ble.gatt;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattDescriptor;

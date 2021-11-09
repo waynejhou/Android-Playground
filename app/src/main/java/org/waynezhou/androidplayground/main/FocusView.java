@@ -5,11 +5,11 @@ import static org.waynezhou.androidplayground.main.FocusPosition.*;
 import android.os.Bundle;
 
 final class FocusView {
-    private Activity host;
+    private MainActivity host;
     private Rotate rotate;
     private Layout layout;
     private Control control;
-    void init(Activity activity) {
+    void init(MainActivity activity) {
         this.host = activity;
         rotate = host.rotate;
         layout = host.layout;
