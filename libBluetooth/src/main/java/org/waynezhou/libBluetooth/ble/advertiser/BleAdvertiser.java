@@ -12,19 +12,27 @@ import org.waynezhou.libBluetooth.eventGroup.BleAdvertiserBaseEventGroup;
 import org.waynezhou.libBluetooth.eventArgs.BleAdvertiserStartFailureEventArgs;
 import org.waynezhou.libBluetooth.eventArgs.BleAdvertiserStartSuccessEventArgs;
 import org.waynezhou.libUtil.event.BaseEventGroup;
+import org.waynezhou.libUtil.event.EventHolder;
 
 public class BleAdvertiser {
-
-    private final _BleAdvertiserBaseEventGroup eventGroup = new _BleAdvertiserBaseEventGroup();
-
-    private static class _BleAdvertiserBaseEventGroup extends BleAdvertiserBaseEventGroup {
+    
+    public static class EventGroup extends BaseEventGroup<EventGroup> {
         @NonNull
-        public BaseEventGroup<BleAdvertiserBaseEventGroup>.Invoker getInvoker() {
-            return super.getInvoker();
-        }
+        public final EventHolder<BleAdvertiserStartFailureEventArgs> startFailure = new EventHolder<>();
+        @NonNull
+        public final EventHolder<BleAdvertiserStartSuccessEventArgs> startSuccess = new EventHolder<>();
+        @NonNull
+        Invoker getPrivateInvoker(){return getInvoker();}
     }
+    
+    @NonNull
+    private final EventGroup eventGroup = new EventGroup();
+    
+    @NonNull
+    private final BaseEventGroup<EventGroup>.Invoker invoker;
+    
 
-    public BleAdvertiserBaseEventGroup getEventGroup() {
+    public BaseEventGroup<EventGroup> getEvents() {
         return eventGroup;
     }
 
@@ -33,6 +41,7 @@ public class BleAdvertiser {
     private final AdvertiseCallbackClass callback = new AdvertiseCallbackClass();
 
     public BleAdvertiser(AdvertiseSettings settings, AdvertiseData data) {
+        invoker = eventGroup.getPrivateInvoker();
         this.settings = settings;
         this.data = data;
     }
@@ -46,7 +55,7 @@ public class BleAdvertiser {
     private class AdvertiseCallbackClass extends AdvertiseCallback {
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-            eventGroup.getInvoker().invoke(g->g.startSuccess,
+            invoker.invoke(g->g.startSuccess,
                     new BleAdvertiserStartSuccessEventArgs(
                             settingsInEffect
                     )
@@ -55,7 +64,7 @@ public class BleAdvertiser {
 
         @Override
         public void onStartFailure(int errorCode) {
-            eventGroup.getInvoker().invoke(g->g.startFailure,
+            invoker.invoke(g->g.startFailure,
                     new BleAdvertiserStartFailureEventArgs(errorCode)
             );
         }

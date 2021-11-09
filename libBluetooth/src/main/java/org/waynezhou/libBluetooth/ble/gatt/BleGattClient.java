@@ -1,4 +1,4 @@
-package org.waynezhou.libBluetooth;
+package org.waynezhou.libBluetooth.ble.gatt.client;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
