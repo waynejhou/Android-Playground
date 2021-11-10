@@ -7,28 +7,18 @@ import android.Manifest;
 import android.os.Bundle;
 import android.os.Environment;
 
-import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.log.LogHelper;
+import org.waynezhou.libUtil.activity.ActivityComponent;
 import org.waynezhou.libUtil.checker.PermissionChecker;
 import org.waynezhou.libView.MediaView;
 
 import java.io.IOException;
 
-final class MediaTop {
-    private MainActivity host;
-    private Layout layout;
-    private Control control;
-    private FocusView focusView;
-    
-    void init(MainActivity activity) {
-        this.host = activity;
-        this.host.getEvents().on(g -> g.create, this::onHostCreate);
-        this.layout = host.layout;
-        this.control = host.control;
-        this.focusView = host.focusView;
-    }
-    
-    private void onHostCreate(Bundle bundle) {
-        control.onGotSignal(this::onControlGotSignal);
+final class MediaTop extends ActivityComponent<MainActivity> {
+
+    @Override
+    protected void onHostCreate(Bundle bundle) {
+        host.onControlGotSignal(this::onControlGotSignal);
         PermissionChecker fileReadPermissionChecker = new PermissionChecker(host, true, Manifest.permission.READ_EXTERNAL_STORAGE);
         fileReadPermissionChecker.getEvents()
           .on(g -> g.permissionGranted, e -> {
@@ -38,7 +28,7 @@ final class MediaTop {
     }
     
     private void onControlGotSignal(ControlSignal signal) {
-        if (focusView.getFocusPos() != FOCUS_TOP) return;
+        if (host.getFocusViewPos() != FOCUS_TOP) return;
         if (CTRL_MEDIA_NEXT_SECTION.equals(signal)) {
             toNextSection();
         } else if (CTRL_MEDIA_PREV_SECTION.equals(signal)) {
@@ -59,9 +49,9 @@ final class MediaTop {
     private int sectionIdx = 0;
     private MediaView view;
     
-    void create() {
+    private void create() {
         view = new MediaView(host);
-        layout.binding.mainTopContainer.addView(view);
+        host.getBinding().mainTopContainer.addView(view);
         try {
             view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video port fix.mp4")
               .setOnPrepared(() -> {

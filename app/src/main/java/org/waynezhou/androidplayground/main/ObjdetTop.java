@@ -11,30 +11,22 @@ import android.view.WindowManager;
 import androidx.fragment.app.FragmentManager;
 
 import org.waynezhou.androidplayground.fragment.ObjectDetectionFragment;
-import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.activity.ActivityComponent;
+import org.waynezhou.libUtil.log.LogHelper;
 import org.waynezhou.libUtil.standard.StandardKt;
 import org.waynezhou.libUtil.checker.PermissionChecker;
 
-public class ObjdetTop {
-    private MainActivity host;
-    private Layout layout;
-    private Rotate rotate;
+class ObjdetTop extends ActivityComponent<MainActivity> {
+   
     private Display windowDisplay;
     private FragmentManager fragmentManager;
-    public void init(MainActivity activity){
-        this.host = activity;
-        this.layout = host.layout;
-        this.rotate = host.rotate;
-        host.getEvents().on(g->g.create, this::onHostCreate);
-        
+    
+    @Override
+    public void onHostCreate(Bundle bundle) {
         WindowManager windowManager = (WindowManager) host.getSystemService(WINDOW_SERVICE);
         windowDisplay = windowManager.getDefaultDisplay();
-    
         fragmentManager = host.getSupportFragmentManager();
-    }
-    
-    private void onHostCreate(Bundle bundle) {
-        rotate.onRotated(this::onHostRotated);
+        host.onActivityRotated(this::onHostRotated);
         this.create();
     }
     
@@ -43,7 +35,7 @@ public class ObjdetTop {
     }
     
     private int getCameraViewRotation(){
-        if(rotate.isLand()){
+        if(host.isOrientationLand()){
             if(windowDisplay.getRotation() == Surface.ROTATION_90){
                 return 0;
             }else{/*Surface.ROTATION_270*/
@@ -58,20 +50,19 @@ public class ObjdetTop {
         }
     }
     
-    
     private void setCameraViewRotation() {
         objdetFragment.setCameraOrientation(getCameraViewRotation());
     }
     
     
     private ObjectDetectionFragment objdetFragment;
-    public void create(){
+    private void create(){
         StandardKt.apply(new PermissionChecker(host, true, Manifest.permission.CAMERA), it->{
             it.getEvents()
               .on(g->g.permissionGranted, e->{
                   objdetFragment = new ObjectDetectionFragment(getCameraViewRotation());
                   fragmentManager.beginTransaction()
-                    .add(layout.binding.mainTopContainer.getId() ,objdetFragment, "objdet")
+                    .add(host.getBinding().mainTopContainer.getId() ,objdetFragment, "objdet")
                     .commitNow();
                   objdetFragment.startPreview();
               })

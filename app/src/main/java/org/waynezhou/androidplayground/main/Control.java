@@ -9,6 +9,8 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import androidx.annotation.NonNull;
+
 import org.waynezhou.libUtil.activity.KeyDownEventArgs;
 import org.waynezhou.libUtil.log.LogHelper;
 import org.waynezhou.libUtil.activity.ActivityComponent;
@@ -18,7 +20,9 @@ import org.waynezhou.libUtil.event.EventListener;
 import org.waynezhou.libUtil.standard.StandardKt;
 
 interface IControl{
-    void sendControlSignal(ControlSignal signal);
+    void sendControlSignal(@NonNull ControlSignal signal);
+    @NonNull
+    EventHolder<ControlSignal>.ListenerToken onControlGotSignal(EventListener<ControlSignal> listener);
 }
 
 final class Control extends ActivityComponent<MainActivity> implements IControl {
@@ -127,13 +131,15 @@ final class Control extends ActivityComponent<MainActivity> implements IControl 
     }
     
     @Override
-    public void sendControlSignal(ControlSignal signal) {
+    public void sendControlSignal(@NonNull ControlSignal signal) {
         host.runOnUiThread(() -> gotSignal.invoke(signal));
     }
     
     private final EventHandler<ControlSignal> gotSignal = new EventHandler<>();
     
-    EventHolder<ControlSignal>.ListenerToken onGotSignal(EventListener<ControlSignal> listener) {
+    @NonNull
+    @Override
+    public EventHolder<ControlSignal>.ListenerToken onControlGotSignal(EventListener<ControlSignal> listener) {
         return gotSignal.on(listener);
     }
 }

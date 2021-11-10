@@ -26,30 +26,37 @@ import java.util.List;
 import java.util.Objects;
 
 interface ILayout {
+    @NonNull
     ActivityMainBinding getBinding();
     
+    @NonNull
     Layouts getLayouts();
     
     boolean isContentViewSet();
     
-    void setLandCurrent(ViewTransition<Layouts> landCurrent);
+    void setLandCurrent(@NonNull ViewTransition<Layouts> landCurrent);
     
-    void setPortCurrent(ViewTransition<Layouts> portCurrent);
+    void setPortCurrent(@NonNull ViewTransition<Layouts> portCurrent);
     
+    @NonNull
     ViewTransition<Layouts> getLandCurrent();
     
+    @NonNull
     ViewTransition<Layouts> getPortCurrent();
     
+    @NonNull
     ViewTransition<Layouts> getCurrent();
     
     boolean isCurrentLayout(String... tags);
     
-    void changeLayout(ViewTransition<Layouts> layout);
+    void changeLayout(@NonNull ViewTransition<Layouts> layout);
     
     void animateLayout(
-      ViewTransition<Layouts> layout,
-      ViewAnimatorArgs args
+      @NonNull ViewTransition<Layouts> layout,
+      @NonNull ViewAnimatorArgs args
     );
+    void setChangedReason(@NonNull LayoutChangedReason changedReason);
+    void setOnceRotationRequested(@NonNull Runnable run);
 }
 
 
@@ -57,6 +64,7 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
     
     private ActivityMainBinding binding;
     
+    @NonNull
     @Override
     public ActivityMainBinding getBinding() {
         return binding;
@@ -64,6 +72,7 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
     
     private final Layouts layouts = new Layouts();
     
+    @NonNull
     @Override
     public Layouts getLayouts() {
         return layouts;
@@ -73,7 +82,7 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
     @Override
     protected void onHostCreate(Bundle bundle) {
         host.getEvents().on(g -> g.resume, $ -> hideSystemUI());
-        control.onGotSignal(this::onControlGotSignal);
+        host.onControlGotSignal(this::onControlGotSignal);
         final WindowManager.LayoutParams lp = host.getWindow().getAttributes();
         lp.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT;
         binding = ActivityMainBinding.inflate(host.getLayoutInflater());
@@ -110,11 +119,11 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
     
     private void onContentViewSet() {
         layouts.refreshLayoutProperties();
-        if (rotate.isLand()) {
-            layout(landCurrent);
+        if (host.isOrientationLand()) {
+            changeLayout(landCurrent);
             
-        } else if (rotate.isPort()) {
-            layout(portCurrent);
+        } else if (host.isOrientationPort()) {
+            changeLayout(portCurrent);
         }
     }
     
@@ -129,7 +138,8 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
     @NonNull
     private Runnable onceRotationRequested = DelegateUtils.NothingRunnable;
     
-    void setOnceRotationRequested(@NonNull Runnable run) {
+    @Override
+    public void setOnceRotationRequested(@NonNull Runnable run) {
         onceRotationRequested = run;
     }
     
@@ -139,7 +149,8 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
         return changedReason;
     }
     
-    void setChangedReason(LayoutChangedReason changedReason) {
+    @Override
+    public void setChangedReason(@NonNull LayoutChangedReason changedReason) {
         this.changedReason = changedReason;
     }
     
@@ -151,17 +162,18 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
     }
     
     @SuppressWarnings("SameParameterValue")
-    void setContentViewSet(boolean contentViewSet) {
+    private void setContentViewSet(boolean contentViewSet) {
         isContentViewSet = contentViewSet;
     }
     
     private ViewTransition<Layouts> landCurrent = layouts.land_top;
     
     @Override
-    public void setLandCurrent(ViewTransition<Layouts> landCurrent) {
+    public void setLandCurrent(@NonNull ViewTransition<Layouts> landCurrent) {
         this.landCurrent = landCurrent;
     }
     
+    @NonNull
     @Override
     public ViewTransition<Layouts> getLandCurrent() {
         return landCurrent;
@@ -170,18 +182,20 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
     private ViewTransition<Layouts> portCurrent = layouts.port_std;
     
     @Override
-    public void setPortCurrent(ViewTransition<Layouts> portCurrent) {
+    public void setPortCurrent(@NonNull ViewTransition<Layouts> portCurrent) {
         this.portCurrent = portCurrent;
     }
     
+    @NonNull
     @Override
     public ViewTransition<Layouts> getPortCurrent() {
         return portCurrent;
     }
     
+    @NonNull
     @Override
     public ViewTransition<Layouts> getCurrent() {
-        if (rotate.isPort()) {
+        if (host.isOrientationPort()) {
             return portCurrent;
         }
         return landCurrent;
@@ -225,33 +239,33 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
     }
     
     private void toPortHalf() {
-        if (rotate.isNotPort()) return;
-        if (focusView.getFocusPos() == FOCUS_TOP) {
+        if (host.isOrientationNotPort()) return;
+        if (host.getFocusViewPos() == FOCUS_TOP) {
             toPort(layouts.port_topHalf);
         }
-        if (focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
+        if (host.getFocusViewPos() == FocusPosition.FOCUS_MIDDLE) {
             toPort(layouts.port_middleHalf);
         }
     }
     
     private void toPortFull() {
-        if (rotate.isNotPort()) return;
-        if (focusView.getFocusPos() == FOCUS_TOP) {
+        if (host.isOrientationPort()) return;
+        if (host.getFocusViewPos() == FOCUS_TOP) {
             toPort(layouts.port_topFull);
         }
-        if (focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE) {
+        if (host.getFocusViewPos() == FocusPosition.FOCUS_MIDDLE) {
             toPort(layouts.port_middleFull);
         }
     }
     
     private void toPort(ViewTransition<Layouts> newLayout) {
-        if (rotate.isNotPort()) return;
+        if (host.isOrientationPort()) return;
         setPortCurrent(newLayout);
         animateLayout(getPortCurrent());
     }
     
     
-    private final static ViewAnimatorArgs DefaultAnimatorArgs = ViewAnimatorArgs.builder()
+    final static ViewAnimatorArgs DefaultAnimatorArgs = ViewAnimatorArgs.builder()
       .setDuration(500)
       .setInterpolator(new DecelerateInterpolator())
       .build();
@@ -283,14 +297,14 @@ final class Layout extends ActivityComponent<MainActivity> implements ILayout {
     };
     
     @Override
-    public void changeLayout(ViewTransition<Layouts> transition) {
+    public void changeLayout(@NonNull ViewTransition<Layouts> transition) {
         transition.runWithoutAnimation(true);
     }
     
     @Override
     public void animateLayout(
-      ViewTransition<Layouts> layout,
-      ViewAnimatorArgs args
+      @NonNull ViewTransition<Layouts> layout,
+      @NonNull ViewAnimatorArgs args
     ) {
         if (animatingAnimator != null) animatingAnimator.cancel();
         animatingAnimator = layout.createAnimatorSet(args);

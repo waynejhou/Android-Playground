@@ -7,16 +7,15 @@ import android.os.Bundle;
 
 import org.waynezhou.androidplayground.service.BleControllerService;
 import org.waynezhou.libBluetooth.bt.guarantor.BtGuarantor;
+import org.waynezhou.libUtil.activity.ActivityComponent;
 import org.waynezhou.libUtil.standard.StandardKt;
 import org.waynezhou.libUtil.register.BroadcastReceiverRegister;
 import org.waynezhou.libUtil.log.LogHelper;
 
-public class BleControl {
-    private MainActivity host;
-    
-    void init(MainActivity activity) {
-        this.host = activity;
-        this.host.getEvents().on(g->g.create, this::onHostCreate);
+class BleControl extends ActivityComponent<MainActivity> {
+
+    @Override
+    public void onInit() {
         this.host.getEvents().on(g->g.destroy, this::onHostDestroy);
     }
     
@@ -27,7 +26,8 @@ public class BleControl {
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private BroadcastReceiverRegister broadcastReceiverRegister;
     
-    private void onHostCreate(Bundle bundle) {
+    @Override
+    public void onHostCreate(Bundle bundle) {
         BtGuarantor btGuarantor = new BtGuarantor(host);
         btGuarantor.getEvents()
           .on(g -> g.guaranteed, e -> {

@@ -174,11 +174,11 @@ class Layouts {
           .pre(v -> v.setZ(1f)).preBuild(topContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 0.90f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 0.90f).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() != FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
+        it.$_startAddStep(() -> host.getFocusViewPos() != FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
@@ -187,11 +187,11 @@ class Layouts {
           .pre(v -> v.setZ(0.5f)).preBuild(middleContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 0.90f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 0.90f).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() != FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
+        it.$_startAddStep(() -> host.getFocusViewPos() != FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
@@ -201,15 +201,15 @@ class Layouts {
           .pre(v -> v.setZ(0f)).preBuild(bottomContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(topContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(middleContainer)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(bottomContainer)
           .$_endAddStep();
     })
@@ -231,13 +231,13 @@ class Layouts {
           .$_endAddStep();
         
         /* mainFocusView */
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(portFull)
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(middleContainerHide)
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(bottomContainerHide)
           .$_endAddStep();
     })
@@ -248,11 +248,11 @@ class Layouts {
           .pre(v -> v.setZ(1f)).preBuild(portTopHalf)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 0.90f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 0.90f).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() != FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
+        it.$_startAddStep(() -> host.getFocusViewPos() != FocusPosition.FOCUS_TOP, () -> binding.mainTopContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
@@ -266,13 +266,13 @@ class Layouts {
           .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
           .$_endAddStep();
         /* mainFocusView */
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(portTopHalf)
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(middleContainerHide)
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1f)).preBuild(bottomContainer)
           .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
           .$_endAddStep();
@@ -295,13 +295,13 @@ class Layouts {
           .preBuild(bottomContainerHide)
           .$_endAddStep();
         /* mainFocusView */
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(topContainerHide)
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(portFull)
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(bottomContainerHide)
           .$_endAddStep();
     })
@@ -317,11 +317,11 @@ class Layouts {
           .pre(v -> v.setZ(0.5f)).preBuild(portTopHalf)
           .$_endAddStep();
         
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 0.90f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 0.90f).end()
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() != FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
+        it.$_startAddStep(() -> host.getFocusViewPos() != FocusPosition.FOCUS_MIDDLE, () -> binding.mainMiddleContainer)
           .let(PROP_SCX).startFromCurrent().toStep(h -> 1f).end()
           .let(PROP_SCY).startFromCurrent().toStep(h -> 1f).end()
           .$_endAddStep();
@@ -331,13 +331,13 @@ class Layouts {
           .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
           .$_endAddStep();
         /* mainFocusView */
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_TOP, () -> binding.mainFocusView)
           .pre(v -> v.setZ(0)).preBuild(topContainerHide)
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_MIDDLE, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1)).preBuild(portTopHalf)
           .$_endAddStep();
-        it.$_startAddStep(() -> focusView.getFocusPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
+        it.$_startAddStep(() -> host.getFocusViewPos() == FocusPosition.FOCUS_BOTTOM, () -> binding.mainFocusView)
           .pre(v -> v.setZ(1f)).preBuild(bottomContainer)
           .let(PROP_TOP).startFromCurrent().toStep(h -> h.port_bottomContainer_top).end()
           .$_endAddStep();

@@ -5,23 +5,37 @@ import androidx.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class EnumClass<T> {
     public final T identifier;
     public final String statement;
     private final Class<T> clz;
-    private static Map<Object, EnumClass<?>> map = new HashMap<>();
-    public static Map<Object, EnumClass<?>> getMap(){
-        return map;
+    private static Map<?,?> map = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    private static <T> Map<Class<EnumClass<T>>,  Map<T, EnumClass<T>>> getMap(Class<T> typeHint){
+        return (Map< Class<EnumClass<T>>,  Map<T, EnumClass<T>> >) map;
     }
+    
+    @SuppressWarnings("unchecked")
+    public static <T, TEnumClass extends EnumClass<T>> Map<T, TEnumClass> getMap(Class<TEnumClass> enumClass, Class<T> typeHint){
+        if(!getMap(typeHint).containsKey(enumClass))
+            putMap((Class<EnumClass<T>>)enumClass, typeHint, Collections.unmodifiableMap(new HashMap<>()));
+        return (Map<T, TEnumClass>) getMap(typeHint).get(enumClass);
+    }
+    private static <T> void putMap(Class<EnumClass<T>> enumClass, Class<T> typeHint, Map<T, EnumClass<T>> map){
+        getMap(typeHint).put(enumClass, map);
+    }
+    
+    @SuppressWarnings("unchecked")
     protected EnumClass(Class<T> clz, T identifier, String statement) {
         this.clz = clz;
         this.identifier = identifier;
         this.statement = statement;
-        map = new HashMap<>(map);
-        map.put(this.identifier, this);
-        map = Collections.unmodifiableMap(map);
+        final Map<T, EnumClass<T>> map = new HashMap<>(getMap((Class<EnumClass<T>>)this.getClass(), clz));
+        map.put(identifier, this);
+        putMap((Class<EnumClass<T>>)this.getClass(), clz, Collections.unmodifiableMap(map));
     }
 
     @Override
@@ -46,7 +60,9 @@ public abstract class EnumClass<T> {
     }
 
     public static abstract class Int extends EnumClass<Integer>{
-
+        public static <TEnumClass extends Int> Map<Integer, TEnumClass> getMap(Class<TEnumClass> enumClass){
+            return EnumClass.getMap(enumClass, Integer.class);
+        }
         protected Int(int identifier, String statement) {
             super(Integer.class, identifier, statement);
         }

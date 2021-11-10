@@ -8,20 +8,18 @@ import android.Manifest;
 import android.os.Bundle;
 import android.os.Environment;
 
-import org.waynezhou.libUtil.LogHelper;
+import org.waynezhou.libUtil.activity.ActivityComponent;
+import org.waynezhou.libUtil.log.LogHelper;
 import org.waynezhou.libUtil.checker.PermissionChecker;
 import org.waynezhou.libView.MediaView;
 
 import java.io.IOException;
 
-final class MediaMiddle {
-    private MainActivity host;
-    private Layout layout;
-    private Control control;
-    private FocusView focusView;
-    
-    private void onHostCreate(Bundle bundle) {
-        control.onGotSignal(this::onControlGotSignal);
+final class MediaMiddle extends ActivityComponent<MainActivity> {
+ 
+    @Override
+    public void onHostCreate(Bundle bundle) {
+        host.onControlGotSignal(this::onControlGotSignal);
         PermissionChecker fileReadPermissionChecker = new PermissionChecker(host, true, Manifest.permission.READ_EXTERNAL_STORAGE);
         fileReadPermissionChecker.getEvents()
           .on(g -> g.permissionGranted, e -> {
@@ -31,7 +29,7 @@ final class MediaMiddle {
     }
     
     private void onControlGotSignal(ControlSignal signal) {
-        if (focusView.getFocusPos() != FOCUS_MIDDLE) return;
+        if (host.getFocusViewPos() != FOCUS_MIDDLE) return;
         if (CTRL_MEDIA_NEXT_SECTION.equals(signal)) {
             toNextSection();
         } else if (CTRL_MEDIA_PREV_SECTION.equals(signal)) {
@@ -53,9 +51,9 @@ final class MediaMiddle {
     
     private MediaView view;
     
-    void create() {
+    private void create() {
         view = new MediaView(host);
-        layout.binding.mainMiddleContainer.addView(view);
+        host.getBinding().mainMiddleContainer.addView(view);
         try {
             view.configPrepareVideo(Environment.getExternalStorageDirectory() + "/DCIM/dummy video fix.mp4")
               .setOnPrepared(() -> {
